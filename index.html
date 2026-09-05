@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>🐼 CSS Fast Door Scanner</title>
   <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
@@ -16,6 +16,7 @@
       height: 100vh;
       display: flex;
       flex-direction: column;
+      user-select: none;
     }
     
     /* Top Bar */
@@ -24,8 +25,8 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      background: rgba(15, 23, 42, 0.9);
-      backdrop-filter: blur(10px);
+      background: rgba(15, 23, 42, 0.92);
+      backdrop-filter: blur(12px);
       z-index: 20;
       border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     }
@@ -35,27 +36,42 @@
       gap: 8px;
       font-family: 'Outfit', sans-serif;
       font-weight: 800;
-      font-size: 17px;
+      font-size: 16px;
     }
-    .badge-event {
+    .top-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .btn-recent {
       background: #1e293b;
-      padding: 4px 10px;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #cbd5e1;
+      padding: 6px 12px;
       border-radius: 100px;
-      font-size: 11px;
+      font-size: 12px;
       font-weight: 600;
-      color: #94a3b8;
-      border: 1px solid rgba(255, 255, 255, 0.08);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      transition: background 0.15s;
+    }
+    .btn-recent:active {
+      transform: scale(0.95);
+      background: #334155;
     }
     .stat-badge {
       background: #10b981;
       color: white;
       font-weight: 800;
       font-size: 13px;
-      padding: 4px 12px;
+      padding: 6px 12px;
       border-radius: 100px;
       display: inline-flex;
       align-items: center;
-      gap: 4px;
+      gap: 5px;
+      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
     }
 
     /* Scanner Viewport */
@@ -82,9 +98,9 @@
     /* Target Reticle Overlay */
     .reticle-box {
       position: absolute;
-      width: 260px;
-      height: 260px;
-      border: 2px solid rgba(255, 255, 255, 0.3);
+      width: 250px;
+      height: 250px;
+      border: 2px solid rgba(255, 255, 255, 0.25);
       border-radius: 24px;
       pointer-events: none;
       z-index: 10;
@@ -121,7 +137,7 @@
     /* Result Banner Card */
     #result-banner {
       position: absolute;
-      bottom: 20px;
+      bottom: 24px;
       left: 16px;
       right: 16px;
       border-radius: 20px;
@@ -171,62 +187,141 @@
       font-weight: 500;
     }
 
-    /* Floating Controls */
-    .controls-overlay {
-      position: absolute;
-      top: 60px;
-      right: 16px;
+    /* Slide-Up Drawer for Recent Scans */
+    .drawer-backdrop {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(4px);
+      z-index: 40;
+      display: none;
+      opacity: 0;
+      transition: opacity 0.25s ease;
+    }
+    .drawer-backdrop.active {
+      display: block;
+      opacity: 1;
+    }
+
+    .drawer {
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      max-height: 75vh;
+      background: #0f172a;
+      border-top-left-radius: 24px;
+      border-top-right-radius: 24px;
+      border-top: 1px solid rgba(255, 255, 255, 0.15);
+      z-index: 50;
+      transform: translateY(100%);
+      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
       display: flex;
       flex-direction: column;
-      gap: 10px;
-      z-index: 25;
+      box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.6);
     }
-    .ctrl-btn {
-      width: 44px;
-      height: 44px;
+    .drawer.active {
+      transform: translateY(0);
+    }
+
+    .drawer-handle {
+      width: 40px;
+      height: 4px;
+      background: #475569;
+      border-radius: 10px;
+      margin: 12px auto 6px;
+    }
+    .drawer-header {
+      padding: 12px 20px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .drawer-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: 18px;
+      font-weight: 800;
+    }
+    .btn-close {
+      background: #1e293b;
+      border: none;
+      color: #94a3b8;
+      width: 32px;
+      height: 32px;
       border-radius: 50%;
-      background: rgba(15, 23, 42, 0.8);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      color: white;
+      font-size: 16px;
+      cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 18px;
-      cursor: pointer;
-      backdrop-filter: blur(10px);
-    }
-    .ctrl-btn:active {
-      transform: scale(0.92);
     }
 
-    /* Bottom API bar */
-    .api-bar {
-      padding: 10px 16px;
-      background: #0f172a;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      font-size: 12px;
-      border-top: 1px solid rgba(255, 255, 255, 0.08);
-      z-index: 20;
-    }
-    .api-input {
+    .drawer-body {
       flex: 1;
+      overflow-y: auto;
+      padding: 16px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .history-card {
       background: #1e293b;
-      border: 1px solid rgba(255, 255, 255, 0.15);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 14px;
+      padding: 12px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .hc-name {
+      font-weight: 700;
+      font-size: 15px;
+      color: white;
+    }
+    .hc-id {
+      font-size: 12px;
       color: #94a3b8;
-      padding: 6px 10px;
-      border-radius: 8px;
+      margin-top: 2px;
+    }
+    .hc-badge {
+      padding: 4px 10px;
+      border-radius: 100px;
       font-size: 11px;
-      font-family: monospace;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+    .badge-green { background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid #10b981; }
+    .badge-orange { background: rgba(245, 158, 11, 0.2); color: #fbbf24; border: 1px solid #f59e0b; }
+    .badge-red { background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid #ef4444; }
+
+    .drawer-footer {
+      padding: 14px 20px 24px;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      display: flex;
+      gap: 10px;
+    }
+    .btn-reset-roster {
+      flex: 1;
+      background: #dc2626;
+      border: none;
+      color: white;
+      font-weight: 700;
+      font-size: 13px;
+      padding: 12px;
+      border-radius: 12px;
+      cursor: pointer;
     }
 
-    /* Audio unlock prompt */
+    /* Sound prompt banner */
     #sound-prompt {
       position: absolute;
       top: 60px;
       left: 16px;
-      background: rgba(15, 23, 42, 0.85);
+      background: rgba(15, 23, 42, 0.9);
       border: 1px solid rgba(255, 255, 255, 0.2);
       color: white;
       padding: 8px 14px;
@@ -248,16 +343,20 @@
   <div class="top-bar">
     <div class="brand">
       <span>🐼</span> CSS Scanner
-      <span class="badge-event">Winter Gala 2026</span>
     </div>
-    <div class="stat-badge">
-      <span>👥</span> <span id="count-display">0</span>
+    <div class="top-actions">
+      <button class="btn-recent" onclick="openDrawer()">
+        <span>📋</span> Recent (<span id="recent-count">0</span>)
+      </button>
+      <div class="stat-badge" onclick="confirmResetRoster()">
+        <span>👥</span> <span id="count-display">0</span>
+      </div>
     </div>
   </div>
 
   <!-- Audio Unlock Prompt -->
   <div id="sound-prompt" onclick="enableAudio()">
-    <span>🔊</span> Enable Audio Chime
+    <span>🔊</span> Tap for Chimes
   </div>
 
   <!-- Scanner Container -->
@@ -272,12 +371,6 @@
       <div class="laser-line"></div>
     </div>
 
-    <!-- Floating Buttons -->
-    <div class="controls-overlay">
-      <button class="ctrl-btn" id="btn-torch" onclick="toggleTorch()">🔦</button>
-      <button class="ctrl-btn" onclick="flipCamera()">🔄</button>
-    </div>
-
     <!-- Result Pop-up Card -->
     <div id="result-banner">
       <div class="banner-title" id="banner-title">Checked In!</div>
@@ -285,11 +378,22 @@
     </div>
   </div>
 
-  <!-- Bottom Settings Bar -->
-  <div class="api-bar">
-    <span style="color:#64748b;">API URL:</span>
-    <input type="text" id="api-url" class="api-input" placeholder="Paste Apps Script Web App URL...">
-    <button onclick="saveApiUrl()" style="background:#3b82f6; color:white; border:none; padding:6px 12px; border-radius:8px; font-size:11px; font-weight:600; cursor:pointer;">Set</button>
+  <!-- Slide-Up Drawer for Recent Scans -->
+  <div class="drawer-backdrop" id="drawer-backdrop" onclick="closeDrawer()"></div>
+  <div class="drawer" id="drawer">
+    <div class="drawer-handle" onclick="closeDrawer()"></div>
+    <div class="drawer-header">
+      <div class="drawer-title">📋 Recent Scans (<span id="drawer-count">0</span>)</div>
+      <button class="btn-close" onclick="closeDrawer()">✖</button>
+    </div>
+    <div class="drawer-body" id="drawer-body">
+      <div style="color:#64748b; text-align:center; padding: 40px 10px; font-size:14px;">
+        No scans in this session yet.<br>Point camera at attendee QR codes to check them in.
+      </div>
+    </div>
+    <div class="drawer-footer">
+      <button class="btn-reset-roster" onclick="confirmResetRoster()">⚡ Reset Test Attendees Roster</button>
+    </div>
   </div>
 
   <script>
@@ -297,24 +401,18 @@
     let isProcessing = false;
     let lastScanTime = 0;
     let lastScannedText = "";
-    let torchState = false;
-    let currentCameraId = null;
-    let cameras = [];
     let audioCtx = null;
     let audioEnabled = false;
+    let scanHistory = [];
 
-    // Load saved API URL or default
-    const defaultUrl = "https://script.google.com/macros/s/AKfycbzr8duP390SpoC7o0k3fsCDAOc3nkjHoGqPRiewrqHngalE_EcPaEaMv0408BAjnMDM4w/exec";
-    const savedUrl = localStorage.getItem("css_scanner_api_url") || defaultUrl;
-    if (document.getElementById("api-url")) document.getElementById("api-url").value = savedUrl;
+    // Apps Script Deployment API URL
+    const API_URL = "https://script.google.com/macros/s/AKfycbzr8duP390SpoC7o0k3fsCDAOc3nkjHoGqPRiewrqHngalE_EcPaEaMv0408BAjnMDM4w/exec";
 
-    function saveApiUrl() {
-      const val = document.getElementById("api-url").value.trim();
-      localStorage.setItem("css_scanner_api_url", val);
-      alert("✅ Saved API URL!");
-    }
+    // Auto-unlock audio on any user tap
+    document.addEventListener("click", () => {
+      if (!audioEnabled) enableAudio();
+    }, { once: true });
 
-    // --- Web Audio API Chimes ---
     function enableAudio() {
       if (!audioCtx) {
         audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -323,7 +421,8 @@
         audioCtx.resume();
       }
       audioEnabled = true;
-      document.getElementById('sound-prompt').style.display = 'none';
+      const prompt = document.getElementById('sound-prompt');
+      if (prompt) prompt.style.display = 'none';
       playSuccessSound();
     }
 
@@ -333,10 +432,9 @@
       const osc = audioCtx.createOscillator();
       const gain = audioCtx.createGain();
       osc.type = "sine";
-      // Ascending two-tone chime
       osc.frequency.setValueAtTime(587.33, now); // D5
       osc.frequency.setValueAtTime(880, now + 0.1); // A5
-      gain.gain.setValueAtTime(0.3, now);
+      gain.gain.setValueAtTime(0.35, now);
       gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
       osc.connect(gain);
       gain.connect(audioCtx.destination);
@@ -360,11 +458,25 @@
       osc.stop(now + 0.3);
     }
 
+    // --- Fetch initial count from Google Sheet on page load ---
+    fetch(API_URL + "?action=count")
+      .then(res => res.json())
+      .then(d => {
+        if (d && d.totalCheckedIn !== undefined) {
+          updateCount(d.totalCheckedIn);
+        }
+      })
+      .catch(e => console.log("Initial count fetch error:", e));
+
+    function updateCount(num) {
+      document.getElementById("count-display").innerText = num;
+    }
+
     // --- QR Scan Handler ---
     function onScanSuccess(decodedText) {
       const now = Date.now();
-      // Debounce: ignore same code within 2 seconds
-      if (decodedText === lastScannedText && (now - lastScanTime < 2000)) {
+      // Debounce: ignore same code within 2.5 seconds
+      if (decodedText === lastScannedText && (now - lastScanTime < 2500)) {
         return;
       }
       if (isProcessing) return;
@@ -383,44 +495,44 @@
         ticketId = ticketId.split("id=")[1].split("&")[0];
       }
 
-      const apiUrl = document.getElementById("api-url").value.trim();
-      if (!apiUrl) {
-        showBanner("status-invalid", "⚠️ API URL Not Set", "Please paste your Apps Script URL below");
-        isProcessing = false;
-        return;
-      }
-
-      const fetchUrl = apiUrl + (apiUrl.includes("?") ? "&" : "?") + "ticket=" + encodeURIComponent(ticketId);
-
-      fetch(fetchUrl)
+      fetch(API_URL + "?ticket=" + encodeURIComponent(ticketId))
         .then(res => res.json())
         .then(data => {
-          handleScanResult(data);
-          setTimeout(() => { isProcessing = false; }, 1200);
+          handleScanResult(data, ticketId);
+          setTimeout(() => { isProcessing = false; }, 1000);
         })
         .catch(err => {
           showBanner("status-invalid", "❌ Connection Error", err.message);
           playWarningSound();
-          setTimeout(() => { isProcessing = false; }, 1200);
+          setTimeout(() => { isProcessing = false; }, 1000);
         });
     }
 
-    function handleScanResult(data) {
+    function handleScanResult(data, ticketId) {
+      const timeStr = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+
       if (data.status === "CHECKED_IN") {
         playSuccessSound();
         showBanner("status-checked-in", "✔ Checked In!", (data.name || "Attendee") + " • " + (data.type || "Ticket"));
         if (data.totalCheckedIn !== undefined) {
-          document.getElementById("count-display").innerText = data.totalCheckedIn;
+          updateCount(data.totalCheckedIn);
         }
+        addHistoryRecord(data.name, data.id || ticketId, "Checked In", "badge-green", timeStr);
+
       } else if (data.status === "ALREADY_SCANNED") {
         playWarningSound();
-        showBanner("status-already-scanned", "⚠ Already Scanned", (data.name || "Attendee") + " • Check-in at: " + (data.time || "earlier"));
+        showBanner("status-already-scanned", "⚠ Already Scanned", (data.name || "Attendee") + " • First checked in: " + (data.time || "earlier"));
+        addHistoryRecord(data.name, data.id || ticketId, "Already Scanned", "badge-orange", timeStr);
+
       } else if (data.status === "UNPAID") {
         playWarningSound();
         showBanner("status-unpaid", "💳 Payment Required", (data.name || "Attendee") + " • " + (data.message || "Unpaid"));
+        addHistoryRecord(data.name, data.id || ticketId, "Unpaid", "badge-red", timeStr);
+
       } else {
         playWarningSound();
         showBanner("status-invalid", "❌ " + (data.status || "Invalid"), data.message || "Unrecognized code");
+        addHistoryRecord("Invalid Code", ticketId, "Invalid", "badge-red", timeStr);
       }
     }
 
@@ -433,70 +545,90 @@
 
       setTimeout(() => {
         banner.style.display = "none";
-      }, 3500);
+      }, 3000);
+    }
+
+    // --- Drawer & History Management ---
+    function openDrawer() {
+      document.getElementById("drawer-backdrop").classList.add("active");
+      document.getElementById("drawer").classList.add("active");
+    }
+
+    function closeDrawer() {
+      document.getElementById("drawer-backdrop").classList.remove("active");
+      document.getElementById("drawer").classList.remove("active");
+    }
+
+    function addHistoryRecord(name, id, status, badgeClass, time) {
+      scanHistory.unshift({ name, id, status, badgeClass, time });
+      document.getElementById("recent-count").innerText = scanHistory.length;
+      document.getElementById("drawer-count").innerText = scanHistory.length;
+
+      const body = document.getElementById("drawer-body");
+      // Remove placeholder
+      if (scanHistory.length === 1) body.innerHTML = "";
+
+      const card = document.createElement("div");
+      card.className = "history-card";
+      card.innerHTML = `
+        <div>
+          <div class="hc-name">${name}</div>
+          <div class="hc-id">${id} • ${time}</div>
+        </div>
+        <div class="hc-badge ${badgeClass}">${status}</div>
+      `;
+      body.prepend(card);
+    }
+
+    // --- Reset Action ---
+    function confirmResetRoster() {
+      if (confirm("Reset test attendees back to unchecked-in status in your Google Sheet?")) {
+        fetch(API_URL + "?action=reset")
+          .then(res => res.json())
+          .then(d => {
+            alert(d.message || "Reset complete!");
+            updateCount(0);
+            scanHistory = [];
+            document.getElementById("recent-count").innerText = "0";
+            document.getElementById("drawer-count").innerText = "0";
+            document.getElementById("drawer-body").innerHTML = '<div style="color:#64748b; text-align:center; padding: 40px 10px; font-size:14px;">Roster reset. Ready for new scans.</div>';
+            closeDrawer();
+          })
+          .catch(err => alert("Error resetting: " + err.message));
+      }
     }
 
     // --- Camera Initialization ---
     function startCamera() {
       html5QrCode = new Html5Qrcode("reader");
       const config = {
-        fps: 25,
+        fps: 30,
         qrbox: { width: 250, height: 250 },
         aspectRatio: 1.777778
       };
 
-      // Try back camera directly with facingMode
       html5QrCode.start(
         { facingMode: "environment" },
         config,
         onScanSuccess
-      ).then(() => {
-        // Enumerate cameras in background for the flip button
+      ).catch(err => {
+        console.warn("Could not start facingMode: environment, falling back:", err);
         Html5Qrcode.getCameras().then(devs => {
-          cameras = devs;
-        }).catch(() => {});
-      }).catch(err => {
-        console.warn("Could not start facingMode: environment, falling back to camera list", err);
-        Html5Qrcode.getCameras().then(devs => {
-          cameras = devs;
-          if (cameras && cameras.length) {
-            let selectedCam = cameras[0].id;
-            for (let c of cameras) {
+          if (devs && devs.length) {
+            let selectedCam = devs[0].id;
+            for (let c of devs) {
               if (c.label.toLowerCase().includes("back") || c.label.toLowerCase().includes("rear") || c.label.toLowerCase().includes("environment")) {
                 selectedCam = c.id;
                 break;
               }
             }
-            currentCameraId = selectedCam;
             html5QrCode.start(selectedCam, config, onScanSuccess);
-          } else {
-            alert("No camera detected or permission denied: " + err);
           }
-        }).catch(e => {
-          alert("Camera permission error: " + e);
-        });
+        }).catch(e => alert("Camera permission error: " + e));
       });
     }
 
     startCamera();
-
-    function flipCamera() {
-      if (cameras.length <= 1) return;
-      const curIdx = cameras.findIndex(c => c.id === currentCameraId);
-      const nextIdx = (curIdx + 1) % cameras.length;
-      currentCameraId = cameras[nextIdx].id;
-      startCamera(currentCameraId);
-    }
-
-    function toggleTorch() {
-      if (!html5QrCode) return;
-      torchState = !torchState;
-      html5QrCode.applyVideoConstraints({
-        advanced: [{ torch: torchState }]
-      }).catch(e => {
-        console.log("Torch not supported on this device/camera.");
-      });
-    }
   </script>
 </body>
 </html>

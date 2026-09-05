@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>🐼 CSS Fast Door Scanner</title>
+  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: #090d16;
+      color: #f8fafc;
+      font-family: 'Inter', sans-serif;
+      overflow: hidden;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    /* Top Bar */
+    .top-bar {
+      padding: 12px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(15, 23, 42, 0.9);
+      backdrop-filter: blur(10px);
+      z-index: 20;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: 'Outfit', sans-serif;
+      font-weight: 800;
+      font-size: 17px;
+    }
+    .badge-event {
+      background: #1e293b;
+      padding: 4px 10px;
+      border-radius: 100px;
+      font-size: 11px;
+      font-weight: 600;
+      color: #94a3b8;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .stat-badge {
+      background: #10b981;
+      color: white;
+      font-weight: 800;
+      font-size: 13px;
+      padding: 4px 12px;
+      border-radius: 100px;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    /* Scanner Viewport */
+    #scanner-container {
+      flex: 1;
+      position: relative;
+      background: #000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+    #reader {
+      width: 100% !important;
+      height: 100% !important;
+      border: none !important;
+    }
+    #reader video {
+      object-fit: cover !important;
+      width: 100% !important;
+      height: 100% !important;
+    }
+
+    /* Target Reticle Overlay */
+    .reticle-box {
+      position: absolute;
+      width: 260px;
+      height: 260px;
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      border-radius: 24px;
+      pointer-events: none;
+      z-index: 10;
+      box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.5);
+    }
+    .reticle-corner {
+      position: absolute;
+      width: 28px;
+      height: 28px;
+      border-color: #10b981;
+      border-style: solid;
+    }
+    .tl { top: -2px; left: -2px; border-width: 4px 0 0 4px; border-top-left-radius: 20px; }
+    .tr { top: -2px; right: -2px; border-width: 4px 4px 0 0; border-top-right-radius: 20px; }
+    .bl { bottom: -2px; left: -2px; border-width: 0 0 4px 4px; border-bottom-left-radius: 20px; }
+    .br { bottom: -2px; right: -2px; border-width: 0 4px 4px 0; border-bottom-right-radius: 20px; }
+
+    .laser-line {
+      position: absolute;
+      width: 100%;
+      height: 2px;
+      background: linear-gradient(90deg, transparent, #10b981, transparent);
+      box-shadow: 0 0 8px #10b981;
+      top: 0;
+      animation: scanAnim 2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+    }
+    @keyframes scanAnim {
+      0% { top: 10%; opacity: 0; }
+      20% { opacity: 1; }
+      80% { opacity: 1; }
+      100% { top: 90%; opacity: 0; }
+    }
+
+    /* Result Banner Card */
+    #result-banner {
+      position: absolute;
+      bottom: 20px;
+      left: 16px;
+      right: 16px;
+      border-radius: 20px;
+      padding: 18px 20px;
+      text-align: center;
+      z-index: 30;
+      display: none;
+      animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+      backdrop-filter: blur(15px);
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+    }
+    @keyframes popIn {
+      from { transform: translateY(30px) scale(0.95); opacity: 0; }
+      to { transform: translateY(0) scale(1); opacity: 1; }
+    }
+    
+    .status-checked-in {
+      background: rgba(16, 185, 129, 0.95);
+      border: 1px solid #34d399;
+      color: white;
+    }
+    .status-already-scanned {
+      background: rgba(245, 158, 11, 0.95);
+      border: 1px solid #fbbf24;
+      color: white;
+    }
+    .status-unpaid {
+      background: rgba(239, 68, 68, 0.95);
+      border: 1px solid #f87171;
+      color: white;
+    }
+    .status-invalid {
+      background: rgba(100, 116, 139, 0.95);
+      border: 1px solid #cbd5e1;
+      color: white;
+    }
+
+    .banner-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: 22px;
+      font-weight: 800;
+      margin-bottom: 4px;
+    }
+    .banner-sub {
+      font-size: 14px;
+      opacity: 0.95;
+      font-weight: 500;
+    }
+
+    /* Floating Controls */
+    .controls-overlay {
+      position: absolute;
+      top: 60px;
+      right: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      z-index: 25;
+    }
+    .ctrl-btn {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: rgba(15, 23, 42, 0.8);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      cursor: pointer;
+      backdrop-filter: blur(10px);
+    }
+    .ctrl-btn:active {
+      transform: scale(0.92);
+    }
+
+    /* Bottom API bar */
+    .api-bar {
+      padding: 10px 16px;
+      background: #0f172a;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      z-index: 20;
+    }
+    .api-input {
+      flex: 1;
+      background: #1e293b;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #94a3b8;
+      padding: 6px 10px;
+      border-radius: 8px;
+      font-size: 11px;
+      font-family: monospace;
+    }
+
+    /* Audio unlock prompt */
+    #sound-prompt {
+      position: absolute;
+      top: 60px;
+      left: 16px;
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: white;
+      padding: 8px 14px;
+      border-radius: 100px;
+      font-size: 12px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      z-index: 25;
+      backdrop-filter: blur(8px);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Bar -->
+  <div class="top-bar">
+    <div class="brand">
+      <span>🐼</span> CSS Scanner
+      <span class="badge-event">Winter Gala 2026</span>
+    </div>
+    <div class="stat-badge">
+      <span>👥</span> <span id="count-display">0</span>
+    </div>
+  </div>
+
+  <!-- Audio Unlock Prompt -->
+  <div id="sound-prompt" onclick="enableAudio()">
+    <span>🔊</span> Enable Audio Chime
+  </div>
+
+  <!-- Scanner Container -->
+  <div id="scanner-container">
+    <div id="reader"></div>
+
+    <div class="reticle-box">
+      <div class="reticle-corner tl"></div>
+      <div class="reticle-corner tr"></div>
+      <div class="reticle-corner bl"></div>
+      <div class="reticle-corner br"></div>
+      <div class="laser-line"></div>
+    </div>
+
+    <!-- Floating Buttons -->
+    <div class="controls-overlay">
+      <button class="ctrl-btn" id="btn-torch" onclick="toggleTorch()">🔦</button>
+      <button class="ctrl-btn" onclick="flipCamera()">🔄</button>
+    </div>
+
+    <!-- Result Pop-up Card -->
+    <div id="result-banner">
+      <div class="banner-title" id="banner-title">Checked In!</div>
+      <div class="banner-sub" id="banner-sub">Alice Wong • RSVP Ticket</div>
+    </div>
+  </div>
+
+  <!-- Bottom Settings Bar -->
+  <div class="api-bar">
+    <span style="color:#64748b;">API URL:</span>
+    <input type="text" id="api-url" class="api-input" placeholder="Paste Apps Script Web App URL...">
+    <button onclick="saveApiUrl()" style="background:#3b82f6; color:white; border:none; padding:6px 12px; border-radius:8px; font-size:11px; font-weight:600; cursor:pointer;">Set</button>
+  </div>
+
+  <script>
+    let html5QrCode = null;
+    let isProcessing = false;
+    let lastScanTime = 0;
+    let lastScannedText = "";
+    let torchState = false;
+    let currentCameraId = null;
+    let cameras = [];
+    let audioCtx = null;
+    let audioEnabled = false;
+
+    // Load saved API URL or default
+    const defaultUrl = "https://script.google.com/macros/s/AKfycbzr8duP390SpoC7o0k3fsCDAOc3nkjHoGqPRiewrqHngalE_EcPaEaMv0408BAjnMDM4w/exec";
+    const savedUrl = localStorage.getItem("css_scanner_api_url") || defaultUrl;
+    if (document.getElementById("api-url")) document.getElementById("api-url").value = savedUrl;
+
+    function saveApiUrl() {
+      const val = document.getElementById("api-url").value.trim();
+      localStorage.setItem("css_scanner_api_url", val);
+      alert("✅ Saved API URL!");
+    }
+
+    // --- Web Audio API Chimes ---
+    function enableAudio() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+      audioEnabled = true;
+      document.getElementById('sound-prompt').style.display = 'none';
+      playSuccessSound();
+    }
+
+    function playSuccessSound() {
+      if (!audioEnabled || !audioCtx) return;
+      const now = audioCtx.currentTime;
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = "sine";
+      // Ascending two-tone chime
+      osc.frequency.setValueAtTime(587.33, now); // D5
+      osc.frequency.setValueAtTime(880, now + 0.1); // A5
+      gain.gain.setValueAtTime(0.3, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start(now);
+      osc.stop(now + 0.35);
+    }
+
+    function playWarningSound() {
+      if (!audioEnabled || !audioCtx) return;
+      const now = audioCtx.currentTime;
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = "sawtooth";
+      osc.frequency.setValueAtTime(260, now);
+      osc.frequency.setValueAtTime(220, now + 0.12);
+      gain.gain.setValueAtTime(0.35, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 0.3);
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start(now);
+      osc.stop(now + 0.3);
+    }
+
+    // --- QR Scan Handler ---
+    function onScanSuccess(decodedText) {
+      const now = Date.now();
+      // Debounce: ignore same code within 2 seconds
+      if (decodedText === lastScannedText && (now - lastScanTime < 2000)) {
+        return;
+      }
+      if (isProcessing) return;
+
+      lastScanTime = now;
+      lastScannedText = decodedText;
+      isProcessing = true;
+
+      // Extract ID from full URL or raw code
+      let ticketId = decodedText.trim();
+      if (ticketId.includes("ticket=")) {
+        ticketId = ticketId.split("ticket=")[1].split("&")[0];
+      } else if (ticketId.includes("member=")) {
+        ticketId = ticketId.split("member=")[1].split("&")[0];
+      } else if (ticketId.includes("id=")) {
+        ticketId = ticketId.split("id=")[1].split("&")[0];
+      }
+
+      const apiUrl = document.getElementById("api-url").value.trim();
+      if (!apiUrl) {
+        showBanner("status-invalid", "⚠️ API URL Not Set", "Please paste your Apps Script URL below");
+        isProcessing = false;
+        return;
+      }
+
+      const fetchUrl = apiUrl + (apiUrl.includes("?") ? "&" : "?") + "ticket=" + encodeURIComponent(ticketId);
+
+      fetch(fetchUrl)
+        .then(res => res.json())
+        .then(data => {
+          handleScanResult(data);
+          setTimeout(() => { isProcessing = false; }, 1200);
+        })
+        .catch(err => {
+          showBanner("status-invalid", "❌ Connection Error", err.message);
+          playWarningSound();
+          setTimeout(() => { isProcessing = false; }, 1200);
+        });
+    }
+
+    function handleScanResult(data) {
+      if (data.status === "CHECKED_IN") {
+        playSuccessSound();
+        showBanner("status-checked-in", "✔ Checked In!", (data.name || "Attendee") + " • " + (data.type || "Ticket"));
+        if (data.totalCheckedIn !== undefined) {
+          document.getElementById("count-display").innerText = data.totalCheckedIn;
+        }
+      } else if (data.status === "ALREADY_SCANNED") {
+        playWarningSound();
+        showBanner("status-already-scanned", "⚠ Already Scanned", (data.name || "Attendee") + " • Check-in at: " + (data.time || "earlier"));
+      } else if (data.status === "UNPAID") {
+        playWarningSound();
+        showBanner("status-unpaid", "💳 Payment Required", (data.name || "Attendee") + " • " + (data.message || "Unpaid"));
+      } else {
+        playWarningSound();
+        showBanner("status-invalid", "❌ " + (data.status || "Invalid"), data.message || "Unrecognized code");
+      }
+    }
+
+    function showBanner(className, title, sub) {
+      const banner = document.getElementById("result-banner");
+      banner.className = className;
+      document.getElementById("banner-title").innerText = title;
+      document.getElementById("banner-sub").innerText = sub;
+      banner.style.display = "block";
+
+      setTimeout(() => {
+        banner.style.display = "none";
+      }, 3500);
+    }
+
+    // --- Camera Initialization ---
+    function startCamera() {
+      html5QrCode = new Html5Qrcode("reader");
+      const config = {
+        fps: 25,
+        qrbox: { width: 250, height: 250 },
+        aspectRatio: 1.777778
+      };
+
+      // Try back camera directly with facingMode
+      html5QrCode.start(
+        { facingMode: "environment" },
+        config,
+        onScanSuccess
+      ).then(() => {
+        // Enumerate cameras in background for the flip button
+        Html5Qrcode.getCameras().then(devs => {
+          cameras = devs;
+        }).catch(() => {});
+      }).catch(err => {
+        console.warn("Could not start facingMode: environment, falling back to camera list", err);
+        Html5Qrcode.getCameras().then(devs => {
+          cameras = devs;
+          if (cameras && cameras.length) {
+            let selectedCam = cameras[0].id;
+            for (let c of cameras) {
+              if (c.label.toLowerCase().includes("back") || c.label.toLowerCase().includes("rear") || c.label.toLowerCase().includes("environment")) {
+                selectedCam = c.id;
+                break;
+              }
+            }
+            currentCameraId = selectedCam;
+            html5QrCode.start(selectedCam, config, onScanSuccess);
+          } else {
+            alert("No camera detected or permission denied: " + err);
+          }
+        }).catch(e => {
+          alert("Camera permission error: " + e);
+        });
+      });
+    }
+
+    startCamera();
+
+    function flipCamera() {
+      if (cameras.length <= 1) return;
+      const curIdx = cameras.findIndex(c => c.id === currentCameraId);
+      const nextIdx = (curIdx + 1) % cameras.length;
+      currentCameraId = cameras[nextIdx].id;
+      startCamera(currentCameraId);
+    }
+
+    function toggleTorch() {
+      if (!html5QrCode) return;
+      torchState = !torchState;
+      html5QrCode.applyVideoConstraints({
+        advanced: [{ torch: torchState }]
+      }).catch(e => {
+        console.log("Torch not supported on this device/camera.");
+      });
+    }
+  </script>
+</body>
+</html>

@@ -278,35 +278,6 @@
       opacity: 0.95;
     }
 
-    /* Floating Camera Controls (Zoom & Torch) */
-    .cam-floating-controls {
-      position: absolute;
-      bottom: 24px;
-      left: 16px;
-      display: flex;
-      gap: 8px;
-      z-index: 30;
-    }
-    .cam-btn {
-      background: rgba(15, 23, 42, 0.85);
-      backdrop-filter: blur(10px);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      color: #f1f5f9;
-      font-size: 13px;
-      font-weight: 700;
-      padding: 8px 14px;
-      border-radius: 100px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 5px;
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
-      transition: all 0.15s ease;
-      user-select: none;
-    }
-    .cam-btn:active {
-      transform: scale(0.92);
-    }
     /* Tap-To-Focus Indicator Ring */
     .focus-indicator {
       position: absolute;
@@ -728,19 +699,6 @@
 
     <!-- Focus Indicator Box -->
     <div id="focus-indicator" class="focus-indicator"></div>
-
-    <!-- Floating Camera Controls (Zoom & Anti-Glare) -->
-    <div class="cam-floating-controls">
-      <button class="cam-btn" id="btn-zoom-toggle" onclick="toggleZoom(event)" title="Toggle 1x / 2x Zoom">
-        🔍 1x
-      </button>
-      <button class="cam-btn" id="btn-screen-mode" onclick="toggleScreenMode(event)" title="Anti-Glare Mode for scanning bright glowing phone screens">
-        📱 Anti-Glare
-      </button>
-      <button class="cam-btn" id="btn-torch-toggle" onclick="toggleTorch(event)" style="display:none;" title="Toggle Flashlight">
-        🔦
-      </button>
-    </div>
 
     <!-- Result Pop-up Banner (Top Eye-Level) -->
     <div id="result-banner" onclick="dismissBanner()" title="Tap to dismiss">
@@ -1645,13 +1603,9 @@
       }
     }
 
-    // --- Camera Controls, Native BarcodeDetector & Anti-Glare Engine ---
-    let currentZoomLevel = 1.0;
-    let isTorchOn = false;
-    let isAntiGlareOn = false;
-
+    // --- Tap-to-Focus Indicator ---
     function handleTapToFocus(e) {
-      if (e.target.closest('button') || e.target.closest('#result-banner') || e.target.closest('.cam-floating-controls') || e.target.closest('.fab-hub')) {
+      if (e.target.closest('button') || e.target.closest('#result-banner') || e.target.closest('.fab-hub')) {
         return;
       }
       const container = document.getElementById("scanner-container");
@@ -1684,111 +1638,7 @@
       }, 650);
     }
 
-    function toggleScreenMode(e) {
-      if (e) e.stopPropagation();
-      isAntiGlareOn = !isAntiGlareOn;
-      const btn = document.getElementById("btn-screen-mode");
-      const video = document.querySelector("#reader video");
-
-      if (isAntiGlareOn) {
-        if (btn) {
-          btn.innerText = "🕶️ Glare Off";
-          btn.style.background = "#0284c7";
-          btn.style.borderColor = "#38bdf8";
-        }
-        // 1. Hardware exposure compensation (cuts down sensor overexposure on Android/Chrome)
-        applyExposureBias(-1.2);
-        // 2. CSS contrast & brightness boost (sharpens black/white edges of phone screens)
-        if (video) video.style.filter = "contrast(1.3) brightness(0.85)";
-      } else {
-        if (btn) {
-          btn.innerText = "📱 Anti-Glare";
-          btn.style.background = "rgba(15, 23, 42, 0.85)";
-          btn.style.borderColor = "rgba(255, 255, 255, 0.2)";
-        }
-        applyExposureBias(0);
-        if (video) video.style.filter = "none";
-      }
-    }
-
-    function applyExposureBias(bias) {
-      if (!html5QrCode) return;
-      try {
-        const caps = html5QrCode.getRunningTrackCapabilities ? html5QrCode.getRunningTrackCapabilities() : null;
-        if (caps && caps.exposureCompensation) {
-          const target = Math.max(caps.exposureCompensation.min, Math.min(caps.exposureCompensation.max, bias));
-          html5QrCode.applyVideoConstraints({
-            advanced: [{ exposureCompensation: target, exposureMode: "continuous" }]
-          }).catch(() => {});
-        }
-      } catch (err) {}
-    }
-
-    function toggleZoom(e) {
-      if (e) e.stopPropagation();
-      if (!html5QrCode) return;
-      const caps = html5QrCode.getRunningTrackCapabilities ? html5QrCode.getRunningTrackCapabilities() : null;
-      const zoomBtn = document.getElementById("btn-zoom-toggle");
-
-      if (currentZoomLevel === 1.0) {
-        currentZoomLevel = 2.0;
-        if (caps && caps.zoom) {
-          const target = Math.min(caps.zoom.max || 2.0, 2.0);
-          html5QrCode.applyVideoConstraints({ advanced: [{ zoom: target }] }).catch(() => {});
-        } else {
-          // CSS digital zoom fallback (effective on iOS Safari)
-          const video = document.querySelector("#reader video");
-          if (video) video.style.transform = "scale(1.35)";
-        }
-        if (zoomBtn) zoomBtn.innerText = "🔍 2x";
-      } else {
-        currentZoomLevel = 1.0;
-        if (caps && caps.zoom) {
-          html5QrCode.applyVideoConstraints({ advanced: [{ zoom: caps.zoom.min || 1.0 }] }).catch(() => {});
-        } else {
-          const video = document.querySelector("#reader video");
-          if (video) video.style.transform = "scale(1.0)";
-        }
-        if (zoomBtn) zoomBtn.innerText = "🔍 1x";
-      }
-    }
-
-    function toggleTorch(e) {
-      if (e) e.stopPropagation();
-      if (!html5QrCode) return;
-      isTorchOn = !isTorchOn;
-      const btn = document.getElementById("btn-torch-toggle");
-      html5QrCode.applyVideoConstraints({
-        advanced: [{ torch: isTorchOn }]
-      }).then(() => {
-        if (btn) btn.style.background = isTorchOn ? "#eab308" : "rgba(15, 23, 42, 0.85)";
-      }).catch(err => {
-        isTorchOn = false;
-        if (btn) btn.style.display = "none";
-      });
-    }
-
-    function applyPostStartCameraFeatures() {
-      setTimeout(() => {
-        // Continuous autofocus and exposure lock
-        try {
-          html5QrCode.applyVideoConstraints({
-            advanced: [{ focusMode: "continuous", exposureMode: "continuous" }]
-          }).catch(() => {});
-        } catch(e) {}
-
-        // Torch detection
-        try {
-          const caps = html5QrCode.getRunningTrackCapabilities ? html5QrCode.getRunningTrackCapabilities() : null;
-          if (caps && caps.torch) {
-            const torchBtn = document.getElementById("btn-torch-toggle");
-            if (torchBtn) torchBtn.style.display = "flex";
-          }
-        } catch(e) {}
-      }, 1000);
-    }
-
-    // --- Camera Initialization with Hardware BarcodeDetector ---
+    // --- Camera Initialization ---
     function startCamera() {
       html5QrCode = new Html5Qrcode("reader", {
         experimentalFeatures: {
@@ -1799,11 +1649,7 @@
 
       const config = {
         fps: 30,
-        qrbox: function(viewfinderWidth, viewfinderHeight) {
-          const minEdge = Math.min(viewfinderWidth, viewfinderHeight);
-          const edge = Math.floor(minEdge * 0.75);
-          return { width: Math.max(220, edge), height: Math.max(220, edge) };
-        },
+        qrbox: { width: 250, height: 250 },
         aspectRatio: 1.777778,
         useBarCodeDetectorIfSupported: true
       };
@@ -1812,9 +1658,7 @@
         { facingMode: "environment" },
         config,
         onScanSuccess
-      ).then(() => {
-        applyPostStartCameraFeatures();
-      }).catch(err => {
+      ).catch(err => {
         console.warn("Could not start facingMode: environment, falling back:", err);
         Html5Qrcode.getCameras().then(devs => {
           if (devs && devs.length) {
@@ -1825,9 +1669,7 @@
                 break;
               }
             }
-            html5QrCode.start(selectedCam, config, onScanSuccess).then(() => {
-              applyPostStartCameraFeatures();
-            });
+            html5QrCode.start(selectedCam, config, onScanSuccess);
           }
         }).catch(e => alert("Camera permission error: " + e));
       });

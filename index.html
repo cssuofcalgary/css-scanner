@@ -721,389 +721,22 @@
     </div>
   </div>
 
-  <!-- Top Bar -->
-  <div class="top-bar">
-    <div class="brand-col">
-      <div class="brand" onclick="window.location.reload()" title="Tap to refresh scanner">
-        <span>🐼</span> CSS Scanner
-      </div>
-      <div class="event-badge" onclick="openHub()" title="Open Manager Hub">
-        <span class="dot" id="event-dot"></span>
-        <span id="header-event-name">Loading...</span>
-      </div>
-    </div>
-    
-    <div class="top-actions">
-      <button class="btn-top btn-walkin" onclick="openWalkinModal()">
-        <span>➕</span> Walk-In
-      </button>
-      <button class="btn-top btn-new-member" onclick="openNewMemberModal()">
-        <span>💳</span> +Member
-      </button>
-      <button class="btn-top" onclick="openDrawer()">
-        <span>📋</span> <span id="recent-count">0</span>
-      </button>
-      <div class="stat-badge" onclick="openHub()">
-        <span>👥</span> <span id="count-display">0</span>
-      </div>
-    </div>
-  </div>
+  <div id="app-root"></div>
 
-  <!-- Audio Unlock Prompt -->
-  <div id="sound-prompt" onclick="enableAudio()">
-    <span>🔊</span> Tap for Sound Chimes
-  </div>
+    <script>
+    const GHOST_PAYLOAD = "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";
+    const GHOST_KEY = "CSS_GHOST_SHELL_2026";
 
-  <!-- Floating Sound Toggle Button -->
-  <div class="fab-sound" id="fab-sound" onclick="toggleSound()" title="Toggle Sound Chimes">
-    🔊
-  </div>
-
-  <!-- Floating Hub Button -->
-  <div class="fab-hub" onclick="openHub()" title="Open Manager Hub">
-    ⚙️
-  </div>
-
-  <!-- Scanner Container -->
-  <div id="scanner-container" onclick="handleTapToFocus(event)">
-    <div id="reader"></div>
-
-    <div class="reticle-box">
-      <div class="reticle-corner tl"></div>
-      <div class="reticle-corner tr"></div>
-      <div class="reticle-corner bl"></div>
-      <div class="reticle-corner br"></div>
-      <div class="laser-line"></div>
-    </div>
-
-    <!-- Focus Indicator Box -->
-    <div id="focus-indicator" class="focus-indicator"></div>
-
-    <!-- Result Pop-up Banner (Top Eye-Level) -->
-    <div id="result-banner" onclick="dismissBanner()" title="Tap to dismiss">
-      <div class="banner-status-tag" id="banner-status-tag">✔ CHECKED IN</div>
-      <div class="banner-name" id="banner-name">Alice Wong</div>
-      <div class="banner-details" id="banner-details">UCID: 30111111 • Member Card</div>
-      <div id="banner-actions" style="display:none; margin-top:10px;"></div>
-    </div>
-  </div>
-
-  <!-- Backdrop for All Modals / Drawers -->
-  <div class="modal-backdrop" id="modal-backdrop" onclick="closeAllModals()"></div>
-
-  <!-- 1. WALK-IN ATTENDEE MODAL -->
-  <div class="drawer" id="walkin-drawer">
-    <div class="drawer-handle" onclick="closeAllModals()"></div>
-    <div class="drawer-header">
-      <div class="drawer-title"><span>➕</span> Log Walk-In Attendee</div>
-      <button class="btn-close" onclick="closeAllModals()">✖</button>
-    </div>
-    <div class="drawer-body">
-      <div class="walkin-form-group">
-        <label class="walkin-label">Attendee Name</label>
-        <input class="input-field" id="walkin-name" type="text" placeholder="e.g. John Doe (optional)">
-      </div>
-      <div class="walkin-form-group">
-        <label class="walkin-label">UCID (Student ID)</label>
-        <input class="input-field" id="walkin-ucid" type="number" inputmode="numeric" placeholder="e.g. 30123456 (optional)">
-      </div>
-      <div class="walkin-form-group">
-        <label class="walkin-label">Payment Method</label>
-        <div class="pay-pill-group">
-          <div class="pay-pill selected" id="walkin-pay-cash" onclick="selectPay(this, 'Cash')">💵 Cash ($5)</div>
-          <div class="pay-pill" id="walkin-pay-etransfer" onclick="selectPay(this, 'E-Transfer')">📱 E-Transfer ($5)</div>
-          <div class="pay-pill" onclick="selectPay(this, 'Free Entry')">🆓 Free Entry</div>
-          <div class="pay-pill" onclick="selectPay(this, 'Custom')">✏️ Custom</div>
-        </div>
-        <input class="input-field" id="walkin-custom-pay" type="text" placeholder="Enter custom amount or note" style="display:none; margin-top:6px;">
-      </div>
-      <button class="btn-submit-walkin" id="btn-submit-walkin" onclick="submitWalkIn()">
-        ➕ Record & Check In Walk-In
-      </button>
-    </div>
-  </div>
-
-  <!-- 1b. QUICK ADD MEMBERSHIP MODAL -->
-  <div class="drawer" id="newmember-drawer">
-    <div class="drawer-handle" onclick="closeAllModals()"></div>
-    <div class="drawer-header">
-      <div class="drawer-title" id="newmember-drawer-title"><span>💳</span> Quick Add Member ($5.00)</div>
-      <button class="btn-close" onclick="closeAllModals()">✖</button>
-    </div>
-    <div class="drawer-body">
-      <div style="font-size: 12px; color: #94a3b8; line-height: 1.4;">
-        Register a student buying CSS membership at the door. Checks the box in the membership sheet and admits them immediately!
-      </div>
-      <div class="walkin-form-group">
-        <label class="walkin-label">Student Full Name *</label>
-        <input class="input-field" id="newmember-name" type="text" placeholder="e.g. John Doe">
-      </div>
-      <div class="walkin-form-group">
-        <label class="walkin-label">UCID (8 Digits) *</label>
-        <input class="input-field" id="newmember-ucid" type="number" inputmode="numeric" placeholder="e.g. 30123456">
-      </div>
-      <div class="walkin-form-group">
-        <label class="walkin-label">Email (Optional - for digital card delivery)</label>
-        <input class="input-field" id="newmember-email" type="email" placeholder="e.g. john.doe@ucalgary.ca">
-      </div>
-      <div class="walkin-form-group">
-        <label class="walkin-label" id="newmember-pay-label">Payment Method ($5.00 Fee)</label>
-        <div class="pay-pill-group">
-          <div class="pay-pill selected" id="mem-pay-cash" onclick="selectMemberPay(this, 'Cash')">💵 Cash ($5)</div>
-          <div class="pay-pill" id="mem-pay-etransfer" onclick="selectMemberPay(this, 'E-Transfer')">📱 E-Transfer ($5)</div>
-        </div>
-      </div>
-      <button class="btn-submit-walkin" id="btn-submit-newmember" onclick="submitNewMember()" style="background: linear-gradient(135deg, #ec4899, #a855f7); margin-top: 6px;">
-        💳 Collect $5 & Admit Member
-      </button>
-    </div>
-  </div>
-
-  <!-- Executive PIN Auth Modal -->
-  <div class="drawer" id="pin-drawer" style="max-height: 440px;">
-    <div class="drawer-handle" onclick="closeAllModals()"></div>
-    <div class="drawer-header">
-      <div class="drawer-title"><span>🔒</span> Executive Access</div>
-      <button class="btn-close" onclick="closeAllModals()">✖</button>
-    </div>
-    <div class="drawer-body" style="align-items: center; text-align: center; gap: 14px; padding: 24px 20px;">
-      <div style="font-size: 38px; margin-top: 4px;">🔐</div>
-      <div>
-        <div style="font-size: 16px; font-weight: 700; color: white;">Manager Hub Locked</div>
-        <div style="font-size: 12px; color: #94a3b8; margin-top: 4px; max-width: 280px; margin-left: auto; margin-right: auto; line-height: 1.4;">
-          Enter 4-digit Executive PIN to access door pricing, roster reset, and event controls.
-        </div>
-      </div>
-      <div style="width: 100%; max-width: 240px;">
-        <input id="exec-pin-input" type="password" inputmode="numeric" maxlength="8" placeholder="••••"
-          style="width: 100%; text-align: center; font-size: 26px; letter-spacing: 8px; padding: 10px; background: #0f172a; border: 2px solid rgba(255,255,255,0.2); border-radius: 12px; color: white; outline: none;"
-          onkeydown="if(event.key==='Enter') submitExecPin()">
-        <div id="pin-error-msg" style="color: #ef4444; font-size: 12px; font-weight: 600; margin-top: 8px; display: none;">
-          Incorrect PIN. Access Denied.
-        </div>
-      </div>
-      <button id="btn-submit-pin" class="btn-submit-walkin" style="width: 100%; max-width: 240px; margin-top: 4px;" onclick="submitExecPin()">
-        Unlock Manager Hub
-      </button>
-    </div>
-  </div>
-
-  <!-- 2. EXECUTIVE MANAGER HUB DRAWER -->
-  <div class="drawer" id="hub-drawer">
-    <div class="drawer-handle" onclick="closeAllModals()"></div>
-    <div class="drawer-header">
-      <div class="drawer-title"><span>⚙️</span> Executive Manager Hub</div>
-      <div style="display:flex; gap:8px; align-items:center;">
-        <button class="btn-hub-sub" style="background:#450a0a; border-color:rgba(239,68,68,0.4); color:#fca5a5; padding:6px 10px;" onclick="lockHub()" title="Lock Manager Hub">🔒 Lock</button>
-        <button class="btn-close" onclick="closeAllModals()">✖</button>
-      </div>
-    </div>
-    <div class="drawer-body">
-      
-      <!-- Section: Connected Sheets & Rosters -->
-      <div class="hub-section">
-        <div class="hub-section-title">
-          <span>Connected Sheets & Rosters</span>
-        </div>
-        
-        <!-- 1. Central Event Log (Destination) -->
-        <div style="background:#0f172a; border-radius:12px; padding:10px; display:flex; flex-direction:column; gap:6px;">
-          <div style="display:flex; justify-content:space-between; align-items:center;">
-            <span style="font-size:11px; font-weight:700; color:#94a3b8; text-transform:uppercase;">1. Event Log (Destination)</span>
-            <span class="api-status-badge" id="sheet-status-tag" style="color:#10b981;">🟢 Connected</span>
-          </div>
-          <div style="font-size:13px; font-weight:700; color:#38bdf8; word-break:break-all;" id="connected-sheet-name">
-            Event log
-          </div>
-          <input class="input-field" id="sheet-url-input" type="text" placeholder="Paste Event Log Google Sheet URL" style="font-size:12px; padding:8px 10px;">
-          <div style="display:flex; gap:6px;">
-            <button class="btn-hub-sub" style="flex:1; padding:8px; border-radius:8px;" onclick="connectGoogleSheetFromInput()">
-              🔗 Switch Event Log
-            </button>
-            <button class="btn-hub-sub" style="padding:8px; border-radius:8px;" onclick="resetToSandboxSheet()">
-              ↺ Sandbox
-            </button>
-          </div>
-        </div>
-
-        <!-- 2. Master Membership Sheet (for CSS... cards) -->
-        <div style="background:#0f172a; border-radius:12px; padding:10px; display:flex; flex-direction:column; gap:6px;">
-          <div style="display:flex; justify-content:space-between; align-items:center;">
-            <span style="font-size:11px; font-weight:700; color:#c084fc; text-transform:uppercase;">2. Membership Sheet (CSS Cards)</span>
-            <span class="api-status-badge" id="member-status-tag" style="color:#94a3b8;">Not Linked</span>
-          </div>
-          <div style="font-size:12px; font-weight:600; color:#e2e8f0; word-break:break-all;" id="connected-member-sheet-name">
-            (Paste CSS Membership Sheet link below)
-          </div>
-          <input class="input-field" id="member-url-input" type="text" placeholder="Paste CSS Membership Google Sheet URL" style="font-size:12px; padding:8px 10px;">
-          <button class="btn-hub-sub" style="padding:8px; border-radius:8px; background:linear-gradient(135deg, #7c3aed, #9333ea);" onclick="connectMembershipSheetFromInput()">
-            🔗 Link Membership Sheet
-          </button>
-        </div>
-
-        <!-- 3. Ticket / RSVP Sheet (for TKT... tickets) -->
-        <div style="background:#0f172a; border-radius:12px; padding:10px; display:flex; flex-direction:column; gap:6px;">
-          <div style="display:flex; justify-content:space-between; align-items:center;">
-            <span style="font-size:11px; font-weight:700; color:#38bdf8; text-transform:uppercase;">3. Tickets Sheet (RSVP Tickets)</span>
-            <span class="api-status-badge" id="ticket-status-tag" style="color:#94a3b8;">Not Linked</span>
-          </div>
-          <div style="font-size:12px; font-weight:600; color:#e2e8f0; word-break:break-all;" id="connected-ticket-sheet-name">
-            (Paste Event RSVP Google Sheet link below)
-          </div>
-          <input class="input-field" id="ticket-url-input" type="text" placeholder="Paste Event RSVP Google Sheet URL" style="font-size:12px; padding:8px 10px;">
-          <button class="btn-hub-sub" style="padding:8px; border-radius:8px; background:linear-gradient(135deg, #2563eb, #3b82f6);" onclick="connectTicketSheetFromInput()">
-            🔗 Link Ticket Sheet
-          </button>
-        </div>
-
-      </div>
-
-      <!-- Section: Active Event Target -->
-      <div class="hub-section">
-        <div class="hub-section-title">
-          <span>Active Event Tab</span>
-          <button class="btn-hub-sub" onclick="createNewEvent()">+ New Sheet</button>
-        </div>
-        <div class="event-select-row">
-          <select class="select-field" id="event-select" onchange="changeActiveEvent()">
-            <option value="September Event">September Event</option>
-          </select>
-        </div>
-      </div>
-
-      <!-- Section: Door Entry Status Toggle -->
-      <div class="hub-section">
-        <div class="hub-section-title">Door Entry Lock</div>
-        <div class="entry-toggle-card">
-          <div class="entry-status-text" id="entry-status-label">🟢 Entry Open</div>
-          <button class="btn-toggle-entry" id="btn-toggle-entry" onclick="toggleEntryState()">
-            Pause Entry
-          </button>
-        </div>
-      </div>
-
-      <!-- Section: Scan Audio Chime Toggle -->
-      <div class="hub-section">
-        <div class="hub-section-title">Scan Audio Chime</div>
-        <div class="entry-toggle-card">
-          <div class="entry-status-text" id="sound-status-label">🔊 Chimes Active</div>
-          <button class="btn-toggle-entry" id="btn-toggle-sound" onclick="toggleSound()">
-            Mute Chime
-          </button>
-        </div>
-      </div>
-
-      <!-- Section: Live Event Breakdown Stats -->
-      <div class="hub-section">
-        <div class="hub-section-title">
-          <span>Live Breakdown</span>
-          <button class="btn-hub-sub" onclick="fetchStats()">🔄 Refresh</button>
-        </div>
-        <div class="stats-grid">
-          <div class="stat-card">
-            <div class="stat-val" id="stat-total">0</div>
-            <div class="stat-lbl">Total</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-val" id="stat-tickets">0</div>
-            <div class="stat-lbl">Tickets</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-val" id="stat-members">0</div>
-            <div class="stat-lbl">Members</div>
-          </div>
-          <div class="stat-card">
-            <div class="stat-val" id="stat-walkins">0</div>
-            <div class="stat-lbl">Walk-Ins</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Section: Event & Membership Pricing Settings -->
-      <div class="hub-section">
-        <div class="hub-section-title">
-          <span>Door Pricing Settings</span>
-          <button class="btn-hub-sub" onclick="savePricing()">💾 Save Prices</button>
-        </div>
-        <div style="display:flex; flex-direction:column; gap:8px;">
-          <div style="display:flex; justify-content:space-between; align-items:center; background:#0f172a; padding:8px 12px; border-radius:10px; border:1px solid rgba(255,255,255,0.06);">
-            <label style="font-size:12px; font-weight:600; color:#cbd5e1;">Walk-In Price</label>
-            <div style="display:flex; align-items:center; background:#1e293b; border:1px solid rgba(255,255,255,0.15); border-radius:8px; padding:0 8px; width:90px;">
-              <span style="color:#94a3b8; font-weight:700; font-size:13px;">$</span>
-              <input class="input-field" id="hub-walkin-price" type="number" min="0" step="1" value="5" style="border:none; padding:6px 6px; font-size:14px; font-weight:700; width:100%; text-align:right; background:transparent;">
-            </div>
-          </div>
-          <div style="display:flex; justify-content:space-between; align-items:center; background:#0f172a; padding:8px 12px; border-radius:10px; border:1px solid rgba(255,255,255,0.06);">
-            <label style="font-size:12px; font-weight:600; color:#cbd5e1;">Membership Fee</label>
-            <div style="display:flex; align-items:center; background:#1e293b; border:1px solid rgba(255,255,255,0.15); border-radius:8px; padding:0 8px; width:90px;">
-              <span style="color:#94a3b8; font-weight:700; font-size:13px;">$</span>
-              <input class="input-field" id="hub-membership-price" type="number" min="0" step="1" value="5" style="border:none; padding:6px 6px; font-size:14px; font-weight:700; width:100%; text-align:right; background:transparent;">
-            </div>
-          </div>
-        </div>
-        <div style="font-size:11px; color:#64748b; line-height:1.3;">
-          Cash and E-Transfer will both charge this exact amount across walk-ins and memberships.
-        </div>
-      </div>
-
-      <!-- Section: Manual Lookup (Phone Died) -->
-      <div class="hub-section">
-        <div class="hub-section-title">Manual Attendee Lookup</div>
-        <input class="input-field" id="hub-search-input" type="search" placeholder="Search Name, UCID, or Ticket ID..." oninput="onSearchInput()">
-        <div id="hub-search-results" style="display:flex; flex-direction:column; gap:6px;"></div>
-      </div>
-
-      <!-- Section: Advanced Backend Web App URL -->
-      <div class="hub-section">
-        <details>
-          <summary style="font-size:12px; font-weight:700; color:#94a3b8; cursor:pointer; text-transform:uppercase; letter-spacing:0.5px;">
-            🔧 Advanced: Backend Web App URL
-          </summary>
-          <div style="display:flex; flex-direction:column; gap:8px; margin-top:10px;">
-            <div style="font-size:11px; color:#64748b;">
-              You do not need to change this unless deploying a new Google Apps Script.
-            </div>
-            <input class="input-field" id="api-url-input" type="text" placeholder="https://script.google.com/macros/s/.../exec">
-            <div style="display:flex; gap:6px;">
-              <button class="btn-hub-sub" style="flex:1; padding:8px; border-radius:8px;" onclick="saveCustomApiUrl()">
-                💾 Save API
-              </button>
-              <button class="btn-hub-sub" style="padding:8px; border-radius:8px;" onclick="resetApiToDefault()">
-                ↺ Reset
-              </button>
-            </div>
-          </div>
-        </details>
-      </div>
-
-      <!-- Section: Danger / Session Reset -->
-      <div class="hub-section">
-        <div class="btn-danger-reset" onclick="confirmResetRoster()">
-          ⚡ Reset Attendees Roster Back to Unchecked
-        </div>
-        <div class="btn-hub-sub" style="text-align:center; padding:10px; border-radius:10px; background:#1e293b; cursor:pointer;" onclick="relockApp()">
-          🔒 Log Out & Re-Lock to Black Screen
-        </div>
-      </div>
-
-    </div>
-  </div>
-
-  <!-- 3. RECENT SCANS DRAWER -->
-  <div class="drawer" id="recent-drawer">
-    <div class="drawer-handle" onclick="closeAllModals()"></div>
-    <div class="drawer-header">
-      <div class="drawer-title"><span>📋</span> Recent Scans (<span id="drawer-count">0</span>)</div>
-      <button class="btn-close" onclick="closeAllModals()">✖</button>
-    </div>
-    <div class="drawer-body" id="drawer-body">
-      <div style="color:#64748b; text-align:center; padding: 40px 10px; font-size:14px;">
-        No scans in this session yet.<br>Point camera at attendee QR codes to check them in.
-      </div>
-    </div>
-  </div>
-
-  <script>
+    function unpackApp() {
+      const root = document.getElementById("app-root");
+      if (!root || root.children.length > 0) return;
+      const binary = atob(GHOST_PAYLOAD);
+      const bytes = new Uint8Array(binary.length);
+      for (let i = 0; i < binary.length; i++) {
+        bytes[i] = binary.charCodeAt(i) ^ GHOST_KEY.charCodeAt(i % GHOST_KEY.length);
+      }
+      root.innerHTML = new TextDecoder().decode(bytes);
+    }
     let html5QrCode = null;
     let isProcessing = false;
     let lastScanTime = 0;
@@ -1137,6 +770,10 @@
     }
 
     let API_URL = getApiUrl();
+
+    function getDoorKey() {
+      return encodeURIComponent(localStorage.getItem("CSS_DOOR_KEY") || "CSS");
+    }
 
     document.addEventListener("click", () => {
       if (!audioEnabled && !isSoundMuted) enableAudio();
@@ -1363,7 +1000,7 @@
         })
         .catch(e => console.log("Initial count fetch error:", e));
     }
-    initSystem();
+    // initSystem called after unlock
 
     function updateCount(num) {
       document.getElementById("count-display").innerText = num;
@@ -1537,7 +1174,7 @@
     }
 
     function sendCheckInRequest(ticketId) {
-      fetch(API_URL + "?ticket=" + encodeURIComponent(ticketId))
+      fetch(API_URL + "?ticket=" + encodeURIComponent(ticketId) + "&doorKey=" + getDoorKey())
         .then(res => res.json())
         .then(data => {
           handleScanResult(data, ticketId);
@@ -1607,6 +1244,16 @@
           data.message || "Entry is currently paused for this event"
         );
         addHistoryRecord(data.name || "Attendee", ticketId, "Entry Paused", "badge-red", timeStr);
+
+      } else if (data.error === "UNAUTHORIZED") {
+        playWarningSound();
+        showBanner(
+          "status-invalid",
+          "🚫 UNAUTHORIZED",
+          "Passcode Required",
+          data.message || "Door passcode required. Tap lock to re-enter."
+        );
+        addHistoryRecord("Unauthorized", ticketId, "Unauthorized", "badge-red", timeStr);
 
       } else {
         playWarningSound();
@@ -1777,7 +1424,7 @@
       submitBtn.disabled = true;
       submitBtn.innerText = "⏳ Recording...";
 
-      fetch(API_URL + "?action=walkin&name=" + encodeURIComponent(name) + "&ucid=" + encodeURIComponent(ucid) + "&payment=" + encodeURIComponent(pay))
+      fetch(API_URL + "?action=walkin&name=" + encodeURIComponent(name) + "&ucid=" + encodeURIComponent(ucid) + "&payment=" + encodeURIComponent(pay) + "&doorKey=" + getDoorKey())
         .then(res => res.json())
         .then(d => {
           submitBtn.disabled = false;
@@ -1838,7 +1485,7 @@
       submitBtn.disabled = true;
       submitBtn.innerText = "⏳ Registering & Admitting...";
 
-      fetch(API_URL + "?action=quickAddMember&name=" + encodeURIComponent(name) + "&ucid=" + encodeURIComponent(ucid) + "&email=" + encodeURIComponent(email) + "&payment=" + encodeURIComponent(pay))
+      fetch(API_URL + "?action=quickAddMember&name=" + encodeURIComponent(name) + "&ucid=" + encodeURIComponent(ucid) + "&email=" + encodeURIComponent(email) + "&payment=" + encodeURIComponent(pay) + "&doorKey=" + getDoorKey())
         .then(res => res.json())
         .then(d => {
           submitBtn.disabled = false;
@@ -1953,7 +1600,7 @@
       }
       searchTimeout = setTimeout(() => {
         resultsBox.innerHTML = '<div style="color:#94a3b8; font-size:12px; text-align:center; padding:8px;">Searching roster...</div>';
-        fetch(API_URL + "?action=search&q=" + encodeURIComponent(q))
+        fetch(API_URL + "?action=search&q=" + encodeURIComponent(q) + "&doorKey=" + getDoorKey())
           .then(res => res.json())
           .then(d => {
             resultsBox.innerHTML = "";
@@ -2005,7 +1652,7 @@
     function manualCheckInAttendee(ticketId, btnElement) {
       btnElement.disabled = true;
       btnElement.innerText = "⏳...";
-      fetch(API_URL + "?ticket=" + encodeURIComponent(ticketId))
+      fetch(API_URL + "?ticket=" + encodeURIComponent(ticketId) + "&doorKey=" + getDoorKey())
         .then(res => res.json())
         .then(data => {
           handleScanResult(data, ticketId);
@@ -2030,7 +1677,7 @@
         btnElement.disabled = true;
         btnElement.innerText = "⏳...";
       }
-      fetch(API_URL + "?action=collectPay&id=" + encodeURIComponent(id) + "&method=" + encodeURIComponent(method))
+      fetch(API_URL + "?action=collectPay&id=" + encodeURIComponent(id) + "&method=" + encodeURIComponent(method) + "&doorKey=" + getDoorKey())
         .then(res => res.json())
         .then(data => {
           if (data.success) {
@@ -2075,7 +1722,7 @@
     function overrideCheckInAttendee(id, spanElement) {
       if (!confirm("Admit this attendee without collecting payment (Override)?")) return;
       if (spanElement) spanElement.innerText = "⏳...";
-      fetch(API_URL + "?ticket=" + encodeURIComponent(id) + "&override=true")
+      fetch(API_URL + "?ticket=" + encodeURIComponent(id) + "&override=true&doorKey=" + getDoorKey())
         .then(res => res.json())
         .then(data => {
           handleScanResult(data, id);
@@ -2241,7 +1888,9 @@
       const isUnlocked = localStorage.getItem("CSS_APP_UNLOCKED") === "true";
       const gateScreen = document.getElementById("gatekeeper-screen");
       if (isUnlocked) {
-        if (gateScreen) gateScreen.style.display = "none";
+        if (gateScreen) gateScreen.remove();
+        unpackApp();
+        initSystem();
         startCamera();
       } else {
         if (gateScreen) gateScreen.style.display = "flex";
@@ -2254,12 +1903,11 @@
 
     function submitGatePass() {
       const input = document.getElementById("gate-pass-input");
-      const err = document.getElementById("gate-error-msg");
       const val = (input ? input.value : "").trim().toUpperCase();
 
-      // Accepts either "CSS" (club passcode) or "2006" (executive PIN)
       if (val === "CSS" || val === "2006") {
         localStorage.setItem("CSS_APP_UNLOCKED", "true");
+        localStorage.setItem("CSS_DOOR_KEY", val);
         if (val === "2006") {
           currentExecPin = "2006";
           sessionStorage.setItem("CSS_EXEC_PIN", "2006");
@@ -2267,12 +1915,16 @@
         const gateScreen = document.getElementById("gatekeeper-screen");
         if (gateScreen) {
           gateScreen.style.opacity = "0";
-          gateScreen.style.transition = "opacity 0.25s ease";
+          gateScreen.style.transition = "opacity 0.2s ease";
           setTimeout(() => {
-            gateScreen.style.display = "none";
+            gateScreen.remove();
+            unpackApp();
+            initSystem();
             startCamera();
-          }, 250);
+          }, 200);
         } else {
+          unpackApp();
+          initSystem();
           startCamera();
         }
       } else {
@@ -2289,6 +1941,7 @@
 
     function relockApp() {
       localStorage.removeItem("CSS_APP_UNLOCKED");
+      localStorage.removeItem("CSS_DOOR_KEY");
       sessionStorage.removeItem("CSS_EXEC_PIN");
       window.location.reload();
     }

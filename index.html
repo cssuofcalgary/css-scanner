@@ -19,39 +19,42 @@
       user-select: none;
     }
     
-    /* Top Bar */
+    /* Top Bar - Ultra Responsive for all phone widths */
     .top-bar {
-      padding: 10px 14px;
+      padding: 8px 12px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      background: rgba(15, 23, 42, 0.94);
+      background: rgba(15, 23, 42, 0.96);
       backdrop-filter: blur(12px);
       z-index: 20;
       border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      min-height: 52px;
     }
     .brand-col {
       display: flex;
       flex-direction: column;
-      gap: 2px;
+      gap: 1px;
+      flex-shrink: 1;
+      min-width: 0;
     }
     .brand {
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 5px;
       font-family: 'Outfit', sans-serif;
       font-weight: 800;
-      font-size: 15px;
-      letter-spacing: -0.3px;
+      font-size: 14px;
+      white-space: nowrap;
     }
     .event-badge {
-      font-size: 11px;
+      font-size: 10px;
       color: #94a3b8;
       font-weight: 500;
       display: flex;
       align-items: center;
       gap: 4px;
-      max-width: 140px;
+      max-width: 100px;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -63,6 +66,7 @@
       border-radius: 50%;
       background: #10b981;
       display: inline-block;
+      flex-shrink: 0;
     }
     .event-badge .dot.paused {
       background: #ef4444;
@@ -71,12 +75,13 @@
     .top-actions {
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 5px;
+      flex-shrink: 0;
     }
     .btn-top {
       border: 1px solid rgba(255, 255, 255, 0.15);
       color: #f1f5f9;
-      padding: 6px 10px;
+      padding: 6px 9px;
       border-radius: 100px;
       font-size: 12px;
       font-weight: 600;
@@ -84,8 +89,9 @@
       display: flex;
       align-items: center;
       gap: 4px;
-      transition: all 0.15s ease;
+      white-space: nowrap;
       background: #1e293b;
+      transition: all 0.15s ease;
     }
     .btn-top:active {
       transform: scale(0.95);
@@ -99,20 +105,46 @@
     }
     .btn-hub {
       background: #1e293b;
-      border-color: rgba(255, 255, 255, 0.18);
+      border-color: rgba(255, 255, 255, 0.25);
     }
     .stat-badge {
       background: #10b981;
       color: white;
       font-weight: 800;
       font-size: 12px;
-      padding: 6px 10px;
+      padding: 6px 9px;
       border-radius: 100px;
       display: inline-flex;
       align-items: center;
       gap: 4px;
       box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
       cursor: pointer;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    /* Floating Action Button for Hub (Always visible & thumb-accessible) */
+    .fab-hub {
+      position: fixed;
+      bottom: 24px;
+      right: 16px;
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #1e293b, #0f172a);
+      border: 2px solid rgba(255, 255, 255, 0.25);
+      color: #ffffff;
+      font-size: 22px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 35;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.65);
+      transition: transform 0.15s ease;
+    }
+    .fab-hub:active {
+      transform: scale(0.92);
     }
 
     /* Scanner Viewport */
@@ -180,9 +212,9 @@
       position: absolute;
       bottom: 24px;
       left: 16px;
-      right: 16px;
+      right: 76px; /* leave room for FAB on right */
       border-radius: 20px;
-      padding: 16px 18px;
+      padding: 14px 16px;
       text-align: center;
       z-index: 30;
       display: none;
@@ -223,9 +255,9 @@
 
     .banner-title {
       font-family: 'Outfit', sans-serif;
-      font-size: 20px;
+      font-size: 18px;
       font-weight: 800;
-      margin-bottom: 4px;
+      margin-bottom: 2px;
     }
     .banner-sub {
       font-size: 13px;
@@ -237,17 +269,17 @@
     #sound-prompt {
       position: absolute;
       top: 60px;
-      left: 16px;
+      left: 14px;
       background: rgba(15, 23, 42, 0.92);
       border: 1px solid rgba(255, 255, 255, 0.2);
       color: white;
-      padding: 8px 14px;
+      padding: 7px 12px;
       border-radius: 100px;
-      font-size: 12px;
+      font-size: 11px;
       font-weight: 600;
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 5px;
       cursor: pointer;
       z-index: 25;
       backdrop-filter: blur(8px);
@@ -257,8 +289,8 @@
     .modal-backdrop {
       position: fixed;
       top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(0, 0, 0, 0.65);
-      backdrop-filter: blur(5px);
+      background: rgba(0, 0, 0, 0.68);
+      backdrop-filter: blur(6px);
       z-index: 40;
       display: none;
       opacity: 0;
@@ -269,7 +301,7 @@
       opacity: 1;
     }
 
-    /* Generic Slide-Up Drawer */
+    /* Slide-Up Drawers */
     .drawer {
       position: fixed;
       left: 0; right: 0; bottom: 0;
@@ -283,7 +315,7 @@
       transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
       display: flex;
       flex-direction: column;
-      box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.6);
+      box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.65);
     }
     .drawer.active {
       transform: translateY(0);
@@ -327,7 +359,7 @@
     .drawer-body {
       flex: 1;
       overflow-y: auto;
-      padding: 16px 20px;
+      padding: 16px 18px;
       display: flex;
       flex-direction: column;
       gap: 12px;
@@ -367,7 +399,7 @@
     .badge-red { background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid #ef4444; }
     .badge-purple { background: rgba(139, 92, 246, 0.2); color: #c084fc; border: 1px solid #8b5cf6; }
 
-    /* Walk-In Modal UI */
+    /* Walk-In Form */
     .walkin-form-group {
       display: flex;
       flex-direction: column;
@@ -433,7 +465,7 @@
       transform: scale(0.98);
     }
 
-    /* Hub Sections & Controls */
+    /* Hub Sections */
     .hub-section {
       background: #1e293b;
       border: 1px solid rgba(255, 255, 255, 0.08);
@@ -514,24 +546,24 @@
     .stat-card {
       background: #0f172a;
       border-radius: 12px;
-      padding: 10px 6px;
+      padding: 10px 4px;
       text-align: center;
     }
     .stat-val {
       font-family: 'Outfit', sans-serif;
-      font-size: 18px;
+      font-size: 17px;
       font-weight: 800;
       color: #38bdf8;
     }
     .stat-lbl {
-      font-size: 10px;
+      font-size: 9px;
       font-weight: 600;
       color: #94a3b8;
       margin-top: 2px;
       text-transform: uppercase;
     }
 
-    /* Manual Search Results */
+    /* Search Results */
     .search-result-card {
       background: #0f172a;
       border: 1px solid rgba(255, 255, 255, 0.08);
@@ -558,12 +590,6 @@
       cursor: default;
     }
 
-    /* API Connection Config Box */
-    .api-config-box {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
     .api-status-badge {
       font-size: 11px;
       font-weight: 600;
@@ -571,24 +597,6 @@
       display: flex;
       align-items: center;
       gap: 4px;
-    }
-    .api-presets {
-      display: flex;
-      gap: 6px;
-      flex-wrap: wrap;
-    }
-    .btn-preset {
-      background: #0f172a;
-      border: 1px solid rgba(255, 255, 255, 0.12);
-      color: #cbd5e1;
-      font-size: 11px;
-      font-weight: 600;
-      padding: 6px 10px;
-      border-radius: 8px;
-      cursor: pointer;
-    }
-    .btn-preset:active {
-      background: #334155;
     }
 
     /* Danger Reset Button */
@@ -610,7 +618,7 @@
   <!-- Top Bar -->
   <div class="top-bar">
     <div class="brand-col">
-      <div class="brand">
+      <div class="brand" onclick="openHub()">
         <span>🐼</span> CSS Scanner
       </div>
       <div class="event-badge" onclick="openHub()">
@@ -638,6 +646,11 @@
   <!-- Audio Unlock Prompt -->
   <div id="sound-prompt" onclick="enableAudio()">
     <span>🔊</span> Tap for Sound Chimes
+  </div>
+
+  <!-- Floating Hub Button (Always accessible on all phones) -->
+  <div class="fab-hub" onclick="openHub()" title="Open Manager Hub">
+    ⚙️
   </div>
 
   <!-- Scanner Container -->
@@ -703,10 +716,32 @@
     </div>
     <div class="drawer-body">
       
+      <!-- Section: Connected Google Sheet -->
+      <div class="hub-section">
+        <div class="hub-section-title">
+          <span>Connected Google Sheet</span>
+          <span class="api-status-badge" id="sheet-status-tag">🟢 Connected</span>
+        </div>
+        <div style="font-size:14px; font-weight:700; color:#38bdf8; word-break:break-all;" id="connected-sheet-name">
+          Loading Sheet Name...
+        </div>
+        <div style="display:flex; flex-direction:column; gap:8px;">
+          <input class="input-field" id="sheet-url-input" type="text" placeholder="Paste Google Sheet URL (docs.google.com/spreadsheets/d/...)">
+          <div style="display:flex; gap:6px;">
+            <button class="btn-hub-sub" style="flex:1; padding:10px; border-radius:10px; background:linear-gradient(135deg, #2563eb, #3b82f6);" onclick="connectGoogleSheetFromInput()">
+              🔗 Connect Google Sheet
+            </button>
+            <button class="btn-hub-sub" style="padding:10px; border-radius:10px;" onclick="resetToSandboxSheet()">
+              ↺ Default
+            </button>
+          </div>
+        </div>
+      </div>
+
       <!-- Section: Active Event Target -->
       <div class="hub-section">
         <div class="hub-section-title">
-          <span>Active Event Sheet Tab</span>
+          <span>Active Event Tab</span>
           <button class="btn-hub-sub" onclick="createNewEvent()">+ New Sheet</button>
         </div>
         <div class="event-select-row">
@@ -760,29 +795,33 @@
         <div id="hub-search-results" style="display:flex; flex-direction:column; gap:6px;"></div>
       </div>
 
-      <!-- Section: Backend Connection / Sheet Switcher -->
+      <!-- Section: Advanced Backend Web App URL (Collapsed by default) -->
       <div class="hub-section">
-        <div class="hub-section-title">
-          <span>Backend Deployment URL</span>
-          <span class="api-status-badge" id="api-status-tag">🟢 Active</span>
-        </div>
-        <div class="api-config-box">
-          <div class="api-presets">
-            <button class="btn-preset" onclick="setApiPreset('sandbox')">🧪 Sandbox Test</button>
-            <button class="btn-preset" onclick="setApiPreset('prod')">🚀 Production RSVP</button>
-            <button class="btn-preset" onclick="resetApiToDefault()">↺ Default</button>
+        <details>
+          <summary style="font-size:12px; font-weight:700; color:#94a3b8; cursor:pointer; text-transform:uppercase; letter-spacing:0.5px;">
+            🔧 Advanced: Backend Web App URL
+          </summary>
+          <div style="display:flex; flex-direction:column; gap:8px; margin-top:10px;">
+            <div style="font-size:11px; color:#64748b;">
+              You do not need to change this unless deploying a new Google Apps Script.
+            </div>
+            <input class="input-field" id="api-url-input" type="text" placeholder="https://script.google.com/macros/s/.../exec">
+            <div style="display:flex; gap:6px;">
+              <button class="btn-hub-sub" style="flex:1; padding:8px; border-radius:8px;" onclick="saveCustomApiUrl()">
+                💾 Save API
+              </button>
+              <button class="btn-hub-sub" style="padding:8px; border-radius:8px;" onclick="resetApiToDefault()">
+                ↺ Reset
+              </button>
+            </div>
           </div>
-          <input class="input-field" id="api-url-input" type="text" placeholder="https://script.google.com/macros/s/.../exec">
-          <button class="btn-hub-sub" style="padding:10px; border-radius:10px;" onclick="saveCustomApiUrl()">
-            💾 Save & Connect Backend
-          </button>
-        </div>
+        </details>
       </div>
 
       <!-- Section: Danger / Session Reset -->
       <div class="hub-section">
         <div class="btn-danger-reset" onclick="confirmResetRoster()">
-          ⚡ Reset Test Attendees Roster Back to Unchecked
+          ⚡ Reset Attendees Roster Back to Unchecked
         </div>
       </div>
 
@@ -814,23 +853,27 @@
     let selectedPayment = "Cash ($5)";
     let searchTimeout = null;
 
-    // --- Dynamic API Configuration ---
-    // Default: Sandbox Web App Deployment
+    // --- Dynamic API Configuration & Auto-Recovery ---
     const DEFAULT_API_URL = "https://script.google.com/macros/s/AKfycbzr8duP390SpoC7o0k3fsCDAOc3nkjHoGqPRiewrqHngalE_EcPaEaMv0408BAjnMDM4w/exec";
-    
-    // Preset URLs for 1-tap environment switching
-    const PRESETS = {
-      sandbox: "https://script.google.com/macros/s/AKfycbzr8duP390SpoC7o0k3fsCDAOc3nkjHoGqPRiewrqHngalE_EcPaEaMv0408BAjnMDM4w/exec",
-      prod: "" // Will be set when user promotes to production
-    };
 
     function getApiUrl() {
       // Priority 1: Query param (?api=https://...)
       const urlParam = new URLSearchParams(window.location.search).get("api");
-      if (urlParam) return urlParam;
-      // Priority 2: LocalStorage (saved via Manager Hub)
+      if (urlParam && urlParam.includes("script.google.com")) return urlParam;
+
+      // Priority 2: LocalStorage with Auto-Recovery
       const stored = localStorage.getItem("CSS_SCANNER_API_URL");
-      if (stored) return stored;
+      if (stored) {
+        // Auto-recover if user accidentally pasted a Google Sheet link as the API URL
+        if (stored.includes("docs.google.com/spreadsheets")) {
+          console.warn("Recovering from Google Sheets URL stored in API_URL...");
+          localStorage.removeItem("CSS_SCANNER_API_URL");
+          setTimeout(() => connectGoogleSheet(stored), 1500);
+          return DEFAULT_API_URL;
+        }
+        if (stored.includes("script.google.com")) return stored;
+      }
+
       // Priority 3: Built-in default
       return DEFAULT_API_URL;
     }
@@ -861,8 +904,8 @@
       const osc = audioCtx.createOscillator();
       const gain = audioCtx.createGain();
       osc.type = "sine";
-      osc.frequency.setValueAtTime(587.33, now); // D5
-      osc.frequency.setValueAtTime(880, now + 0.1); // A5
+      osc.frequency.setValueAtTime(587.33, now);
+      osc.frequency.setValueAtTime(880, now + 0.1);
       gain.gain.setValueAtTime(0.35, now);
       gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
       osc.connect(gain);
@@ -892,6 +935,19 @@
       API_URL = getApiUrl();
       const input = document.getElementById("api-url-input");
       if (input) input.value = API_URL;
+
+      // Query connected spreadsheet info
+      fetch(API_URL + "?action=getSheet")
+        .then(res => res.json())
+        .then(d => {
+          if (d.success && d.sheetName) {
+            document.getElementById("connected-sheet-name").innerText = d.sheetName;
+            document.getElementById("sheet-status-tag").innerText = "🟢 Connected";
+          }
+        })
+        .catch(e => {
+          document.getElementById("sheet-status-tag").innerText = "🟡 Connecting...";
+        });
 
       fetch(API_URL + "?action=events")
         .then(res => res.json())
@@ -949,6 +1005,50 @@
         if (ev === active) opt.selected = true;
         select.appendChild(opt);
       });
+    }
+
+    // --- Google Sheet Connection Management ---
+    function connectGoogleSheetFromInput() {
+      const input = document.getElementById("sheet-url-input").value.trim();
+      if (!input) {
+        alert("Please paste your Google Sheet URL (e.g. https://docs.google.com/spreadsheets/d/.../edit)");
+        return;
+      }
+      connectGoogleSheet(input);
+    }
+
+    function connectGoogleSheet(sheetUrlOrId) {
+      let sheetId = sheetUrlOrId.trim();
+      if (sheetId.includes("/d/")) {
+        sheetId = sheetId.split("/d/")[1].split("/")[0];
+      }
+      const statusTag = document.getElementById("sheet-status-tag");
+      if (statusTag) statusTag.innerText = "⏳ Connecting...";
+
+      fetch(API_URL + "?action=setSheet&sheetId=" + encodeURIComponent(sheetId))
+        .then(res => res.json())
+        .then(d => {
+          if (d.success) {
+            alert("✔ Successfully connected to Google Sheet: " + d.sheetName);
+            document.getElementById("connected-sheet-name").innerText = d.sheetName;
+            if (statusTag) statusTag.innerText = "🟢 Connected";
+            if (d.events) populateEventSelect(d.events, d.activeEvent);
+            updateEventUI(d.activeEvent, true);
+            fetchStats();
+            document.getElementById("sheet-url-input").value = "";
+          } else {
+            alert("❌ Connection error: " + d.message);
+            if (statusTag) statusTag.innerText = "🔴 Error";
+          }
+        })
+        .catch(err => {
+          alert("Network error connecting to sheet: " + err.message);
+          if (statusTag) statusTag.innerText = "🔴 Network Error";
+        });
+    }
+
+    function resetToSandboxSheet() {
+      connectGoogleSheet("1SeufHXJhHmOVlnFjPi49af91_ZQbOQ8Go1nqhupnFfI");
     }
 
     // --- QR Scan Handler ---
@@ -1248,36 +1348,24 @@
         });
     }
 
-    // --- Dynamic API Configuration Controls ---
-    function setApiPreset(type) {
-      if (type === 'sandbox') {
-        document.getElementById('api-url-input').value = PRESETS.sandbox;
-      } else if (type === 'prod') {
-        const prodUrl = prompt("Enter your Production Apps Script Deployment URL (or leave blank to cancel):", PRESETS.prod || "");
-        if (prodUrl && prodUrl.trim()) {
-          document.getElementById('api-url-input').value = prodUrl.trim();
-        }
-      }
-    }
-
+    // --- Advanced Backend API URL Controls ---
     function saveCustomApiUrl() {
       const input = document.getElementById("api-url-input").value.trim();
-      if (!input || !input.startsWith("https://")) {
-        alert("Please enter a valid HTTPS Google Apps Script URL.");
+      if (!input || !input.startsWith("https://") || !input.includes("script.google.com")) {
+        alert("Please enter a valid HTTPS Google Apps Script URL (https://script.google.com/macros/s/.../exec).");
         return;
       }
       localStorage.setItem("CSS_SCANNER_API_URL", input);
       API_URL = input;
-      alert("Backend connected! Re-syncing roster...");
+      alert("API URL updated! Re-syncing...");
       initSystem();
-      closeAllModals();
     }
 
     function resetApiToDefault() {
       localStorage.removeItem("CSS_SCANNER_API_URL");
       API_URL = DEFAULT_API_URL;
       document.getElementById("api-url-input").value = DEFAULT_API_URL;
-      alert("Reset back to default Sandbox backend!");
+      alert("Reset back to default Sandbox API URL!");
       initSystem();
     }
 

@@ -19,7 +19,7 @@
       user-select: none;
     }
     
-    /* Top Bar - Ultra Responsive for all phone widths */
+    /* Top Bar */
     .top-bar {
       padding: 8px 12px;
       display: flex;
@@ -46,6 +46,7 @@
       font-weight: 800;
       font-size: 14px;
       white-space: nowrap;
+      cursor: pointer;
     }
     .event-badge {
       font-size: 10px;
@@ -123,7 +124,7 @@
       flex-shrink: 0;
     }
 
-    /* Floating Action Button for Hub (Always visible & thumb-accessible) */
+    /* Floating Hub Button for phones */
     .fab-hub {
       position: fixed;
       bottom: 24px;
@@ -207,23 +208,23 @@
       100% { top: 90%; opacity: 0; }
     }
 
-    /* Result Banner Card */
+    /* RESULT BANNER - MOVED UP TO EYE-LEVEL */
     #result-banner {
       position: absolute;
-      bottom: 24px;
-      left: 16px;
-      right: 76px; /* leave room for FAB on right */
+      top: 68px; /* High up, directly below the top bar */
+      left: 14px;
+      right: 14px;
       border-radius: 20px;
-      padding: 14px 16px;
+      padding: 16px 18px;
       text-align: center;
-      z-index: 30;
+      z-index: 35;
       display: none;
-      animation: popIn 0.28s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
-      backdrop-filter: blur(15px);
-      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.55);
+      animation: popDown 0.28s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+      backdrop-filter: blur(18px);
+      box-shadow: 0 14px 35px rgba(0, 0, 0, 0.7);
     }
-    @keyframes popIn {
-      from { transform: translateY(30px) scale(0.95); opacity: 0; }
+    @keyframes popDown {
+      from { transform: translateY(-25px) scale(0.95); opacity: 0; }
       to { transform: translateY(0) scale(1); opacity: 1; }
     }
     
@@ -253,16 +254,27 @@
       color: white;
     }
 
-    .banner-title {
-      font-family: 'Outfit', sans-serif;
-      font-size: 18px;
+    .banner-status-tag {
+      font-size: 11px;
       font-weight: 800;
-      margin-bottom: 2px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-bottom: 3px;
+      opacity: 0.92;
     }
-    .banner-sub {
+    .banner-name {
+      font-family: 'Outfit', sans-serif;
+      font-size: 22px;
+      font-weight: 800;
+      line-height: 1.2;
+      margin-bottom: 4px;
+      color: #ffffff;
+      word-break: break-word;
+    }
+    .banner-details {
       font-size: 13px;
+      font-weight: 600;
       opacity: 0.95;
-      font-weight: 500;
     }
 
     /* Sound prompt banner */
@@ -593,7 +605,6 @@
     .api-status-badge {
       font-size: 11px;
       font-weight: 600;
-      color: #10b981;
       display: flex;
       align-items: center;
       gap: 4px;
@@ -648,7 +659,7 @@
     <span>🔊</span> Tap for Sound Chimes
   </div>
 
-  <!-- Floating Hub Button (Always accessible on all phones) -->
+  <!-- Floating Hub Button -->
   <div class="fab-hub" onclick="openHub()" title="Open Manager Hub">
     ⚙️
   </div>
@@ -665,10 +676,11 @@
       <div class="laser-line"></div>
     </div>
 
-    <!-- Result Pop-up Card -->
+    <!-- Result Pop-up Banner (Top Eye-Level) -->
     <div id="result-banner">
-      <div class="banner-title" id="banner-title">Checked In!</div>
-      <div class="banner-sub" id="banner-sub">Alice Wong • RSVP Ticket</div>
+      <div class="banner-status-tag" id="banner-status-tag">✔ CHECKED IN</div>
+      <div class="banner-name" id="banner-name">Alice Wong</div>
+      <div class="banner-details" id="banner-details">UCID: 30111111 • Member Card</div>
     </div>
   </div>
 
@@ -716,26 +728,62 @@
     </div>
     <div class="drawer-body">
       
-      <!-- Section: Connected Google Sheet -->
+      <!-- Section: Connected Sheets & Rosters -->
       <div class="hub-section">
         <div class="hub-section-title">
-          <span>Connected Google Sheet</span>
-          <span class="api-status-badge" id="sheet-status-tag">🟢 Connected</span>
+          <span>Connected Sheets & Rosters</span>
         </div>
-        <div style="font-size:14px; font-weight:700; color:#38bdf8; word-break:break-all;" id="connected-sheet-name">
-          Loading Sheet Name...
-        </div>
-        <div style="display:flex; flex-direction:column; gap:8px;">
-          <input class="input-field" id="sheet-url-input" type="text" placeholder="Paste Google Sheet URL (docs.google.com/spreadsheets/d/...)">
+        
+        <!-- 1. Central Event Log (Destination) -->
+        <div style="background:#0f172a; border-radius:12px; padding:10px; display:flex; flex-direction:column; gap:6px;">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <span style="font-size:11px; font-weight:700; color:#94a3b8; text-transform:uppercase;">1. Event Log (Destination)</span>
+            <span class="api-status-badge" id="sheet-status-tag" style="color:#10b981;">🟢 Connected</span>
+          </div>
+          <div style="font-size:13px; font-weight:700; color:#38bdf8; word-break:break-all;" id="connected-sheet-name">
+            Event log
+          </div>
+          <input class="input-field" id="sheet-url-input" type="text" placeholder="Paste Event Log Google Sheet URL" style="font-size:12px; padding:8px 10px;">
           <div style="display:flex; gap:6px;">
-            <button class="btn-hub-sub" style="flex:1; padding:10px; border-radius:10px; background:linear-gradient(135deg, #2563eb, #3b82f6);" onclick="connectGoogleSheetFromInput()">
-              🔗 Connect Google Sheet
+            <button class="btn-hub-sub" style="flex:1; padding:8px; border-radius:8px;" onclick="connectGoogleSheetFromInput()">
+              🔗 Switch Event Log
             </button>
-            <button class="btn-hub-sub" style="padding:10px; border-radius:10px;" onclick="resetToSandboxSheet()">
-              ↺ Default
+            <button class="btn-hub-sub" style="padding:8px; border-radius:8px;" onclick="resetToSandboxSheet()">
+              ↺ Sandbox
             </button>
           </div>
         </div>
+
+        <!-- 2. Master Membership Sheet (for CSS... cards) -->
+        <div style="background:#0f172a; border-radius:12px; padding:10px; display:flex; flex-direction:column; gap:6px;">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <span style="font-size:11px; font-weight:700; color:#c084fc; text-transform:uppercase;">2. Membership Sheet (CSS Cards)</span>
+            <span class="api-status-badge" id="member-status-tag" style="color:#94a3b8;">Not Linked</span>
+          </div>
+          <div style="font-size:12px; font-weight:600; color:#e2e8f0; word-break:break-all;" id="connected-member-sheet-name">
+            (Paste CSS Membership Sheet link below)
+          </div>
+          <input class="input-field" id="member-url-input" type="text" placeholder="Paste CSS Membership Google Sheet URL" style="font-size:12px; padding:8px 10px;">
+          <button class="btn-hub-sub" style="padding:8px; border-radius:8px; background:linear-gradient(135deg, #7c3aed, #9333ea);" onclick="connectMembershipSheetFromInput()">
+            🔗 Link Membership Sheet
+          </button>
+        </div>
+
+        <!-- 3. Ticket / RSVP Sheet (for TKT... tickets) -->
+        <div style="background:#0f172a; border-radius:12px; padding:10px; display:flex; flex-direction:column; gap:6px;">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <span style="font-size:11px; font-weight:700; color:#38bdf8; text-transform:uppercase;">3. Tickets Sheet (RSVP Tickets)</span>
+            <span class="api-status-badge" id="ticket-status-tag" style="color:#94a3b8;">Not Linked</span>
+          </div>
+          <div style="font-size:12px; font-weight:600; color:#e2e8f0; word-break:break-all;" id="connected-ticket-sheet-name">
+            (Paste Event RSVP Google Sheet link below)
+          </div>
+          <input class="input-field" id="ticket-url-input" type="text" placeholder="Paste Event RSVP Google Sheet URL" style="font-size:12px; padding:8px 10px;">
+          <button class="btn-hub-sub" style="padding:8px; border-radius:8px; background:linear-gradient(135deg, #2563eb, #3b82f6);" onclick="connectTicketSheetFromInput()">
+            🔗 Link Ticket Sheet
+          </button>
+        </div>
+
       </div>
 
       <!-- Section: Active Event Target -->
@@ -746,7 +794,7 @@
         </div>
         <div class="event-select-row">
           <select class="select-field" id="event-select" onchange="changeActiveEvent()">
-            <option value="Winter Gala 2026">Winter Gala 2026</option>
+            <option value="September Event">September Event</option>
           </select>
         </div>
       </div>
@@ -795,7 +843,7 @@
         <div id="hub-search-results" style="display:flex; flex-direction:column; gap:6px;"></div>
       </div>
 
-      <!-- Section: Advanced Backend Web App URL (Collapsed by default) -->
+      <!-- Section: Advanced Backend Web App URL -->
       <div class="hub-section">
         <details>
           <summary style="font-size:12px; font-weight:700; color:#94a3b8; cursor:pointer; text-transform:uppercase; letter-spacing:0.5px;">
@@ -853,20 +901,16 @@
     let selectedPayment = "Cash ($5)";
     let searchTimeout = null;
 
-    // --- Dynamic API Configuration & Auto-Recovery ---
+    // Default Sandbox Deployment URL
     const DEFAULT_API_URL = "https://script.google.com/macros/s/AKfycbzr8duP390SpoC7o0k3fsCDAOc3nkjHoGqPRiewrqHngalE_EcPaEaMv0408BAjnMDM4w/exec";
 
     function getApiUrl() {
-      // Priority 1: Query param (?api=https://...)
       const urlParam = new URLSearchParams(window.location.search).get("api");
       if (urlParam && urlParam.includes("script.google.com")) return urlParam;
 
-      // Priority 2: LocalStorage with Auto-Recovery
       const stored = localStorage.getItem("CSS_SCANNER_API_URL");
       if (stored) {
-        // Auto-recover if user accidentally pasted a Google Sheet link as the API URL
         if (stored.includes("docs.google.com/spreadsheets")) {
-          console.warn("Recovering from Google Sheets URL stored in API_URL...");
           localStorage.removeItem("CSS_SCANNER_API_URL");
           setTimeout(() => connectGoogleSheet(stored), 1500);
           return DEFAULT_API_URL;
@@ -874,13 +918,11 @@
         if (stored.includes("script.google.com")) return stored;
       }
 
-      // Priority 3: Built-in default
       return DEFAULT_API_URL;
     }
 
     let API_URL = getApiUrl();
 
-    // Auto-unlock audio on any user tap
     document.addEventListener("click", () => {
       if (!audioEnabled) enableAudio();
     }, { once: true });
@@ -936,13 +978,35 @@
       const input = document.getElementById("api-url-input");
       if (input) input.value = API_URL;
 
-      // Query connected spreadsheet info
-      fetch(API_URL + "?action=getSheet")
+      // Query connected spreadsheets info
+      fetch(API_URL + "?action=getRosters")
         .then(res => res.json())
         .then(d => {
-          if (d.success && d.sheetName) {
-            document.getElementById("connected-sheet-name").innerText = d.sheetName;
-            document.getElementById("sheet-status-tag").innerText = "🟢 Connected";
+          if (d.success) {
+            if (d.sheetName) {
+              document.getElementById("connected-sheet-name").innerText = d.sheetName;
+              document.getElementById("sheet-status-tag").innerText = "🟢 Connected";
+            }
+            if (d.memberSheetName) {
+              document.getElementById("connected-member-sheet-name").innerText = d.memberSheetName;
+              document.getElementById("member-status-tag").innerText = "🟢 Linked";
+              document.getElementById("member-status-tag").style.color = "#a855f7";
+            } else {
+              document.getElementById("connected-member-sheet-name").innerText = "(Paste CSS Membership Sheet link below)";
+              document.getElementById("member-status-tag").innerText = "Not Linked";
+              document.getElementById("member-status-tag").style.color = "#94a3b8";
+            }
+            if (d.ticketSheetName) {
+              document.getElementById("connected-ticket-sheet-name").innerText = d.ticketSheetName;
+              document.getElementById("ticket-status-tag").innerText = "🟢 Linked";
+              document.getElementById("ticket-status-tag").style.color = "#38bdf8";
+            } else {
+              document.getElementById("connected-ticket-sheet-name").innerText = "(Paste Event RSVP Sheet link below)";
+              document.getElementById("ticket-status-tag").innerText = "Not Linked";
+              document.getElementById("ticket-status-tag").style.color = "#94a3b8";
+            }
+            if (d.events) populateEventSelect(d.events, d.activeEvent);
+            updateEventUI(d.activeEvent, true);
           }
         })
         .catch(e => {
@@ -977,7 +1041,7 @@
     }
 
     function updateEventUI(eventName, entryActive) {
-      document.getElementById("header-event-name").innerText = eventName || "Winter Gala 2026";
+      document.getElementById("header-event-name").innerText = eventName || "September Event";
       const dot = document.getElementById("event-dot");
       const label = document.getElementById("entry-status-label");
       const btn = document.getElementById("btn-toggle-entry");
@@ -998,7 +1062,7 @@
     function populateEventSelect(events, active) {
       const select = document.getElementById("event-select");
       select.innerHTML = "";
-      (events || [active || "Winter Gala 2026"]).forEach(ev => {
+      (events || [active || "September Event"]).forEach(ev => {
         const opt = document.createElement("option");
         opt.value = ev;
         opt.innerText = ev;
@@ -1007,7 +1071,7 @@
       });
     }
 
-    // --- Google Sheet Connection Management ---
+    // --- Google Sheet & Roster Connections ---
     function connectGoogleSheetFromInput() {
       const input = document.getElementById("sheet-url-input").value.trim();
       if (!input) {
@@ -1029,7 +1093,7 @@
         .then(res => res.json())
         .then(d => {
           if (d.success) {
-            alert("✔ Successfully connected to Google Sheet: " + d.sheetName);
+            alert("✔ Successfully connected to Event Log: " + d.sheetName);
             document.getElementById("connected-sheet-name").innerText = d.sheetName;
             if (statusTag) statusTag.innerText = "🟢 Connected";
             if (d.events) populateEventSelect(d.events, d.activeEvent);
@@ -1045,6 +1109,60 @@
           alert("Network error connecting to sheet: " + err.message);
           if (statusTag) statusTag.innerText = "🔴 Network Error";
         });
+    }
+
+    function connectMembershipSheetFromInput() {
+      const input = document.getElementById("member-url-input").value.trim();
+      if (!input) {
+        alert("Please paste your CSS Membership Google Sheet URL.");
+        return;
+      }
+      let sheetId = input;
+      if (sheetId.includes("/d/")) {
+        sheetId = sheetId.split("/d/")[1].split("/")[0];
+      }
+      fetch(API_URL + "?action=setMembershipSheet&sheetId=" + encodeURIComponent(sheetId))
+        .then(res => res.json())
+        .then(d => {
+          if (d.success) {
+            alert("✔ " + d.message);
+            document.getElementById("connected-member-sheet-name").innerText = d.sheetName;
+            const tag = document.getElementById("member-status-tag");
+            tag.innerText = "🟢 Linked";
+            tag.style.color = "#a855f7";
+            document.getElementById("member-url-input").value = "";
+          } else {
+            alert("❌ " + d.message);
+          }
+        })
+        .catch(e => alert("Network error: " + e.message));
+    }
+
+    function connectTicketSheetFromInput() {
+      const input = document.getElementById("ticket-url-input").value.trim();
+      if (!input) {
+        alert("Please paste your Event RSVP Tickets Google Sheet URL.");
+        return;
+      }
+      let sheetId = input;
+      if (sheetId.includes("/d/")) {
+        sheetId = sheetId.split("/d/")[1].split("/")[0];
+      }
+      fetch(API_URL + "?action=setTicketSheet&sheetId=" + encodeURIComponent(sheetId))
+        .then(res => res.json())
+        .then(d => {
+          if (d.success) {
+            alert("✔ " + d.message);
+            document.getElementById("connected-ticket-sheet-name").innerText = d.sheetName;
+            const tag = document.getElementById("ticket-status-tag");
+            tag.innerText = "🟢 Linked";
+            tag.style.color = "#38bdf8";
+            document.getElementById("ticket-url-input").value = "";
+          } else {
+            alert("❌ " + d.message);
+          }
+        })
+        .catch(e => alert("Network error: " + e.message));
     }
 
     function resetToSandboxSheet() {
@@ -1083,7 +1201,12 @@
           setTimeout(() => { isProcessing = false; }, 1000);
         })
         .catch(err => {
-          showBanner("status-invalid", "❌ Connection Error", err.message);
+          showBanner(
+            "status-invalid",
+            "❌ CONNECTION ERROR",
+            "Network Error",
+            err.message
+          );
           playWarningSound();
           setTimeout(() => { isProcessing = false; }, 1000);
         });
@@ -1094,44 +1217,70 @@
 
       if (data.status === "CHECKED_IN") {
         playSuccessSound();
-        showBanner("status-checked-in", "✔ Checked In!", (data.name || "Attendee") + " • " + (data.type || "Ticket"));
+        showBanner(
+          "status-checked-in",
+          "✔ CHECKED IN",
+          data.name || "Attendee",
+          `UCID: ${data.ucid || "N/A"} • ${data.type || "Ticket"}`
+        );
         if (data.totalCheckedIn !== undefined) {
           updateCount(data.totalCheckedIn);
         }
-        addHistoryRecord(data.name, data.id || ticketId, "Checked In", "badge-green", timeStr);
+        addHistoryRecord(data.name || "Attendee", `UCID: ${data.ucid || "N/A"} • ${data.id || ticketId}`, "Checked In", "badge-green", timeStr);
 
       } else if (data.status === "ALREADY_SCANNED") {
         playWarningSound();
-        showBanner("status-already-scanned", "⚠ Already Scanned", (data.name || "Attendee") + " • Checked in: " + (data.time || "earlier"));
-        addHistoryRecord(data.name, data.id || ticketId, "Already Scanned", "badge-orange", timeStr);
+        showBanner(
+          "status-already-scanned",
+          "⚠ ALREADY SCANNED",
+          data.name || "Attendee",
+          `UCID: ${data.ucid || "N/A"} • First scanned at: ${data.time || "earlier"}`
+        );
+        addHistoryRecord(data.name || "Attendee", `UCID: ${data.ucid || "N/A"} • ${data.id || ticketId}`, "Already Scanned", "badge-orange", timeStr);
 
       } else if (data.status === "UNPAID") {
         playWarningSound();
-        showBanner("status-unpaid", "💳 Payment Required", (data.name || "Attendee") + " • " + (data.message || "Unpaid"));
-        addHistoryRecord(data.name, data.id || ticketId, "Unpaid", "badge-red", timeStr);
+        showBanner(
+          "status-unpaid",
+          "💳 PAYMENT REQUIRED",
+          data.name || "Attendee",
+          `UCID: ${data.ucid || "N/A"} • Payment Pending`
+        );
+        addHistoryRecord(data.name || "Attendee", `UCID: ${data.ucid || "N/A"} • ${data.id || ticketId}`, "Unpaid", "badge-red", timeStr);
 
       } else if (data.status === "ENTRY_PAUSED") {
         playWarningSound();
-        showBanner("status-paused", "⏸ Door Entry Paused", data.message || "Entry is currently paused");
+        showBanner(
+          "status-paused",
+          "⏸ ENTRY PAUSED",
+          data.name || "Door Closed",
+          data.message || "Entry is currently paused for this event"
+        );
         addHistoryRecord(data.name || "Attendee", ticketId, "Entry Paused", "badge-red", timeStr);
 
       } else {
         playWarningSound();
-        showBanner("status-invalid", "❌ " + (data.status || "Invalid"), data.message || "Unrecognized code");
+        showBanner(
+          "status-invalid",
+          "❌ INVALID CODE",
+          "Unrecognized ID",
+          `ID "${ticketId}" not found in connected rosters`
+        );
         addHistoryRecord("Invalid Code", ticketId, "Invalid", "badge-red", timeStr);
       }
     }
 
-    function showBanner(className, title, sub) {
+    function showBanner(className, tag, name, details) {
       const banner = document.getElementById("result-banner");
       banner.className = className;
-      document.getElementById("banner-title").innerText = title;
-      document.getElementById("banner-sub").innerText = sub;
+      document.getElementById("banner-status-tag").innerText = tag;
+      document.getElementById("banner-name").innerText = name;
+      document.getElementById("banner-details").innerText = details;
       banner.style.display = "block";
 
       setTimeout(() => {
         banner.style.display = "none";
-      }, 3000);
+      }, 3500);
     }
 
     // --- Modal & Drawer Navigation ---
@@ -1197,10 +1346,15 @@
           if (d.success) {
             closeAllModals();
             playSuccessSound();
-            showBanner("status-checked-in", "✔ Walk-In Logged!", name + " • " + pay);
+            showBanner(
+              "status-checked-in",
+              "✔ WALK-IN LOGGED",
+              name,
+              `UCID: ${ucid} • ${pay}`
+            );
             if (d.totalCheckedIn !== undefined) updateCount(d.totalCheckedIn);
             const timeStr = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-            addHistoryRecord(name, d.id + " • Walk-In", pay, "badge-purple", timeStr);
+            addHistoryRecord(name, `UCID: ${ucid} • ${d.id}`, pay, "badge-purple", timeStr);
             nameInput.value = "";
             ucidInput.value = "";
             customInput.value = "";
@@ -1370,8 +1524,8 @@
     }
 
     // --- History Management ---
-    function addHistoryRecord(name, id, status, badgeClass, time) {
-      scanHistory.unshift({ name, id, status, badgeClass, time });
+    function addHistoryRecord(name, details, status, badgeClass, time) {
+      scanHistory.unshift({ name, details, status, badgeClass, time });
       document.getElementById("recent-count").innerText = scanHistory.length;
       document.getElementById("drawer-count").innerText = scanHistory.length;
 
@@ -1383,7 +1537,7 @@
       card.innerHTML = `
         <div>
           <div class="hc-name">${name}</div>
-          <div class="hc-id">${id} • ${time}</div>
+          <div class="hc-id">${details} • ${time}</div>
         </div>
         <div class="hc-badge ${badgeClass}">${status}</div>
       `;

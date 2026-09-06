@@ -222,6 +222,7 @@
       animation: popDown 0.28s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
       backdrop-filter: blur(18px);
       box-shadow: 0 14px 35px rgba(0, 0, 0, 0.7);
+      cursor: pointer;
     }
     @keyframes popDown {
       from { transform: translateY(-25px) scale(0.95); opacity: 0; }
@@ -275,6 +276,55 @@
       font-size: 13px;
       font-weight: 600;
       opacity: 0.95;
+    }
+
+    /* Floating Camera Controls (Zoom & Torch) */
+    .cam-floating-controls {
+      position: absolute;
+      bottom: 24px;
+      left: 16px;
+      display: flex;
+      gap: 8px;
+      z-index: 30;
+    }
+    .cam-btn {
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: #f1f5f9;
+      font-size: 13px;
+      font-weight: 700;
+      padding: 8px 14px;
+      border-radius: 100px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+      transition: all 0.15s ease;
+      user-select: none;
+    }
+    .cam-btn:active {
+      transform: scale(0.92);
+    }
+    /* Tap-To-Focus Indicator Ring */
+    .focus-indicator {
+      position: absolute;
+      width: 64px;
+      height: 64px;
+      border: 2px solid #eab308;
+      border-radius: 12px;
+      box-shadow: 0 0 14px rgba(234, 179, 8, 0.7);
+      pointer-events: none;
+      z-index: 32;
+      display: none;
+      transform: translate(-50%, -50%) scale(1.3);
+      transition: transform 0.2s ease-out, opacity 0.3s ease;
+      opacity: 1;
+    }
+    .focus-indicator.active {
+      display: block;
+      transform: translate(-50%, -50%) scale(1);
     }
 
     /* Sound prompt banner */
@@ -665,7 +715,7 @@
   </div>
 
   <!-- Scanner Container -->
-  <div id="scanner-container">
+  <div id="scanner-container" onclick="handleTapToFocus(event)">
     <div id="reader"></div>
 
     <div class="reticle-box">
@@ -676,8 +726,24 @@
       <div class="laser-line"></div>
     </div>
 
+    <!-- Focus Indicator Box -->
+    <div id="focus-indicator" class="focus-indicator"></div>
+
+    <!-- Floating Camera Controls (Zoom & Torch) -->
+    <div class="cam-floating-controls">
+      <button class="cam-btn" id="btn-zoom-toggle" onclick="toggleZoom(event)" title="Toggle 1x / 2x Zoom">
+        🔍 1x
+      </button>
+      <button class="cam-btn" id="btn-torch-toggle" onclick="toggleTorch(event)" style="display:none;" title="Toggle Flashlight">
+        🔦
+      </button>
+      <button class="cam-btn" id="btn-refocus" onclick="manualRefocus(event)" title="Refocus Camera">
+        🎯 Refocus
+      </button>
+    </div>
+
     <!-- Result Pop-up Banner (Top Eye-Level) -->
-    <div id="result-banner">
+    <div id="result-banner" onclick="dismissBanner()" title="Tap to dismiss">
       <div class="banner-status-tag" id="banner-status-tag">✔ CHECKED IN</div>
       <div class="banner-name" id="banner-name">Alice Wong</div>
       <div class="banner-details" id="banner-details">UCID: 30111111 • Member Card</div>
@@ -1182,13 +1248,17 @@
       isProcessing = true;
 
       let ticketId = decodedText.trim();
+      try { ticketId = decodeURIComponent(ticketId).trim(); } catch(e){}
       if (ticketId.includes("ticket=")) {
         ticketId = ticketId.split("ticket=")[1].split("&")[0];
       } else if (ticketId.includes("member=")) {
         ticketId = ticketId.split("member=")[1].split("&")[0];
       } else if (ticketId.includes("id=")) {
         ticketId = ticketId.split("id=")[1].split("&")[0];
+      } else if (ticketId.includes("code=")) {
+        ticketId = ticketId.split("code=")[1].split("&")[0];
       }
+      ticketId = ticketId.split("#")[0].split("?")[0].trim().toUpperCase();
 
       sendCheckInRequest(ticketId);
     }
@@ -1270,6 +1340,7 @@
       }
     }
 
+    let bannerTimeout = null;
     function showBanner(className, tag, name, details) {
       const banner = document.getElementById("result-banner");
       banner.className = className;
@@ -1278,9 +1349,16 @@
       document.getElementById("banner-details").innerText = details;
       banner.style.display = "block";
 
-      setTimeout(() => {
+      if (bannerTimeout) clearTimeout(bannerTimeout);
+      bannerTimeout = setTimeout(() => {
         banner.style.display = "none";
-      }, 3500);
+      }, 4000);
+    }
+
+    function dismissBanner() {
+      const banner = document.getElementById("result-banner");
+      banner.style.display = "none";
+      if (bannerTimeout) clearTimeout(bannerTimeout);
     }
 
     // --- Modal & Drawer Navigation ---
@@ -1454,10 +1532,14 @@
             d.results.forEach(att => {
               const card = document.createElement("div");
               card.className = "search-result-card";
+              const emailHint = (att.matchedField === "email" && att.email)
+                ? `<div style="font-size:11px; color:#38bdf8; margin-top:2px;">✉ Matched email: ${att.email}</div>`
+                : (att.email ? `<div style="font-size:10px; color:#64748b; margin-top:1px;">${att.email}</div>` : '');
               card.innerHTML = `
                 <div>
                   <div style="font-weight:700; font-size:13px; color:white;">${att.name}</div>
                   <div style="font-size:11px; color:#94a3b8;">${att.id} • UCID: ${att.ucid || "N/A"}</div>
+                  ${emailHint}
                   <div style="font-size:10px; margin-top:2px;">
                     ${att.paid ? '<span style="color:#34d399;">● Paid</span>' : '<span style="color:#f87171;">● Unpaid</span>'}
                     ${att.checkedIn ? '<span style="color:#94a3b8; margin-left:6px;">(Checked In ' + att.time + ')</span>' : ''}
@@ -1563,12 +1645,142 @@
       }
     }
 
+    // --- Camera Controls & Autofocus Engine ---
+    let currentZoomLevel = 1.0;
+    let isTorchOn = false;
+
+    function handleTapToFocus(e) {
+      // Don't trigger focus animation if tapping on buttons or banner
+      if (e.target.closest('button') || e.target.closest('#result-banner') || e.target.closest('.cam-floating-controls') || e.target.closest('.fab-hub')) {
+        return;
+      }
+      const container = document.getElementById("scanner-container");
+      const rect = container.getBoundingClientRect();
+      const x = (e.clientX || (e.touches && e.touches[0].clientX)) - rect.left;
+      const y = (e.clientY || (e.touches && e.touches[0].clientY)) - rect.top;
+
+      showFocusRing(x, y);
+      triggerHardwareRefocus();
+    }
+
+    function showFocusRing(x, y) {
+      const ring = document.getElementById("focus-indicator");
+      if (!ring) return;
+      ring.style.left = x + "px";
+      ring.style.top = y + "px";
+      ring.classList.remove("active");
+      void ring.offsetWidth; // force browser repaint to retrigger animation
+      ring.classList.add("active");
+      setTimeout(() => {
+        ring.classList.remove("active");
+      }, 700);
+    }
+
+    function triggerHardwareRefocus() {
+      if (!html5QrCode) return;
+      try {
+        // 1. Force re-application of continuous focus
+        html5QrCode.applyVideoConstraints({
+          advanced: [{ focusMode: "continuous" }]
+        }).catch(() => {});
+
+        // 2. Nudge zoom level slightly to force optical contrast-detect autofocus loop
+        const caps = html5QrCode.getRunningTrackCapabilities ? html5QrCode.getRunningTrackCapabilities() : null;
+        if (caps && caps.zoom) {
+          const currentZoom = currentZoomLevel;
+          const nudge = (currentZoom >= (caps.zoom.max || 2.0)) ? currentZoom - 0.05 : currentZoom + 0.05;
+          html5QrCode.applyVideoConstraints({ advanced: [{ zoom: nudge }] })
+            .then(() => {
+              setTimeout(() => {
+                html5QrCode.applyVideoConstraints({ advanced: [{ zoom: currentZoom }] }).catch(() => {});
+              }, 80);
+            }).catch(() => {});
+        }
+      } catch (e) {}
+    }
+
+    function manualRefocus(e) {
+      if (e) e.stopPropagation();
+      const container = document.getElementById("scanner-container");
+      const rect = container.getBoundingClientRect();
+      showFocusRing(rect.width / 2, rect.height / 2);
+      triggerHardwareRefocus();
+    }
+
+    function toggleZoom(e) {
+      if (e) e.stopPropagation();
+      if (!html5QrCode) return;
+      const caps = html5QrCode.getRunningTrackCapabilities ? html5QrCode.getRunningTrackCapabilities() : null;
+      const zoomBtn = document.getElementById("btn-zoom-toggle");
+
+      if (currentZoomLevel === 1.0) {
+        currentZoomLevel = 2.0;
+        if (caps && caps.zoom) {
+          const target = Math.min(caps.zoom.max || 2.0, 2.0);
+          html5QrCode.applyVideoConstraints({ advanced: [{ zoom: target }] }).catch(() => {});
+        } else {
+          // CSS digital zoom fallback (effective on iOS Safari)
+          const video = document.querySelector("#reader video");
+          if (video) video.style.transform = "scale(1.4)";
+        }
+        if (zoomBtn) zoomBtn.innerText = "🔍 2x";
+      } else {
+        currentZoomLevel = 1.0;
+        if (caps && caps.zoom) {
+          html5QrCode.applyVideoConstraints({ advanced: [{ zoom: caps.zoom.min || 1.0 }] }).catch(() => {});
+        } else {
+          const video = document.querySelector("#reader video");
+          if (video) video.style.transform = "scale(1.0)";
+        }
+        if (zoomBtn) zoomBtn.innerText = "🔍 1x";
+      }
+    }
+
+    function toggleTorch(e) {
+      if (e) e.stopPropagation();
+      if (!html5QrCode) return;
+      isTorchOn = !isTorchOn;
+      const btn = document.getElementById("btn-torch-toggle");
+      html5QrCode.applyVideoConstraints({
+        advanced: [{ torch: isTorchOn }]
+      }).then(() => {
+        if (btn) btn.style.background = isTorchOn ? "#eab308" : "rgba(15, 23, 42, 0.85)";
+      }).catch(err => {
+        isTorchOn = false;
+        if (btn) btn.style.display = "none";
+      });
+    }
+
+    function applyPostStartCameraFeatures() {
+      setTimeout(() => {
+        // Continuous autofocus
+        try {
+          html5QrCode.applyVideoConstraints({
+            advanced: [{ focusMode: "continuous" }]
+          }).catch(() => {});
+        } catch(e) {}
+
+        // Torch detection
+        try {
+          const caps = html5QrCode.getRunningTrackCapabilities ? html5QrCode.getRunningTrackCapabilities() : null;
+          if (caps && caps.torch) {
+            const torchBtn = document.getElementById("btn-torch-toggle");
+            if (torchBtn) torchBtn.style.display = "flex";
+          }
+        } catch(e) {}
+      }, 1000);
+    }
+
     // --- Camera Initialization ---
     function startCamera() {
       html5QrCode = new Html5Qrcode("reader");
       const config = {
-        fps: 30,
-        qrbox: { width: 250, height: 250 },
+        fps: 25,
+        qrbox: function(viewfinderWidth, viewfinderHeight) {
+          const minEdge = Math.min(viewfinderWidth, viewfinderHeight);
+          const edge = Math.floor(minEdge * 0.72);
+          return { width: Math.max(220, edge), height: Math.max(220, edge) };
+        },
         aspectRatio: 1.777778
       };
 
@@ -1576,7 +1788,9 @@
         { facingMode: "environment" },
         config,
         onScanSuccess
-      ).catch(err => {
+      ).then(() => {
+        applyPostStartCameraFeatures();
+      }).catch(err => {
         console.warn("Could not start facingMode: environment, falling back:", err);
         Html5Qrcode.getCameras().then(devs => {
           if (devs && devs.length) {
@@ -1587,7 +1801,9 @@
                 break;
               }
             }
-            html5QrCode.start(selectedCam, config, onScanSuccess);
+            html5QrCode.start(selectedCam, config, onScanSuccess).then(() => {
+              applyPostStartCameraFeatures();
+            });
           }
         }).catch(e => alert("Camera permission error: " + e));
       });

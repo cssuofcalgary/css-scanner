@@ -802,7 +802,7 @@
     let selectedPayment = "Cash";
     let searchTimeout = null;
 
-    // Default Sandbox Deployment URL
+    // Production Web App Deployment URL
     const DEFAULT_API_URL = "https://script.google.com/macros/s/AKfycbzr8duP390SpoC7o0k3fsCDAOc3nkjHoGqPRiewrqHngalE_EcPaEaMv0408BAjnMDM4w/exec";
 
     function getApiUrl() {
@@ -1209,10 +1209,6 @@
           }
         })
         .catch(e => alert("Network error: " + e.message));
-    }
-
-    function resetToSandboxSheet() {
-      connectGoogleSheet("1SeufHXJhHmOVlnFjPi49af91_ZQbOQ8Go1nqhupnFfI");
     }
 
     // --- QR Scan Handler ---
@@ -1883,7 +1879,7 @@
       localStorage.removeItem("CSS_SCANNER_API_URL");
       API_URL = DEFAULT_API_URL;
       document.getElementById("api-url-input").value = DEFAULT_API_URL;
-      alert("Reset back to default Sandbox API URL!");
+      alert("Reset back to default Production API URL!");
       initSystem();
     }
 
@@ -1906,32 +1902,6 @@
         <div class="hc-badge ${badgeClass}">${status}</div>
       `;
       body.prepend(card);
-    }
-
-    // --- Reset Action ---
-    function confirmResetRoster() {
-      if (confirm("Reset test attendees back to unchecked-in status in your Google Sheet?")) {
-        fetch(API_URL + "?action=reset&pin=" + encodeURIComponent(currentExecPin))
-          .then(res => res.json())
-          .then(d => {
-            if (d.success) {
-              alert(d.message || "Reset complete!");
-              updateCount(0);
-              scanHistory = [];
-              document.getElementById("recent-count").innerText = "0";
-              document.getElementById("drawer-count").innerText = "0";
-              document.getElementById("drawer-body").innerHTML = '<div style="color:#64748b; text-align:center; padding: 40px 10px; font-size:14px;">Roster reset. Ready for new scans.</div>';
-              closeAllModals();
-              fetchStats();
-            } else if (d.error === "UNAUTHORIZED") {
-              lockHub();
-              alert(d.message || "Executive session expired. Please enter PIN again.");
-            } else {
-              alert("Error resetting: " + (d.message || "Unknown error"));
-            }
-          })
-          .catch(err => alert("Error resetting: " + err.message));
-      }
     }
 
     // --- Tap-to-Focus Indicator ---
@@ -2051,10 +2021,10 @@
 
       if (isAllowed) {
         localStorage.setItem("CSS_APP_UNLOCKED", "true");
-        localStorage.setItem("CSS_DOOR_KEY", "2006");
+        localStorage.setItem("CSS_DOOR_KEY", rawVal);
         if (isExec) {
-          currentExecPin = "2006";
-          sessionStorage.setItem("CSS_EXEC_PIN", "2006");
+          currentExecPin = rawVal;
+          sessionStorage.setItem("CSS_EXEC_PIN", rawVal);
         }
 
         if (btn) {

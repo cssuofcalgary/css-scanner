@@ -711,6 +711,16 @@
 </head>
 <body>
 
+  <!-- Gatekeeper Stealth Black Screen (Zero Text) -->
+  <div id="gatekeeper-screen" style="position: fixed; inset: 0; background: #000000; z-index: 999999; display: flex; align-items: center; justify-content: center; padding: 20px;">
+    <div style="width: 100%; max-width: 220px; text-align: center;">
+      <input id="gate-pass-input" type="password" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
+        style="width: 100%; box-sizing: border-box; text-align: center; font-size: 20px; font-weight: 700; letter-spacing: 4px; padding: 12px 16px; background: #0a0a0a; border: 1px solid rgba(255,255,255,0.12); border-radius: 12px; color: #ffffff; outline: none; transition: border-color 0.2s;"
+        onkeydown="if(event.key==='Enter') submitGatePass()"
+        oninput="if(this.value.trim().toUpperCase()==='CSS'||this.value.trim()==='2006') submitGatePass()">
+    </div>
+  </div>
+
   <!-- Top Bar -->
   <div class="top-bar">
     <div class="brand-col">
@@ -849,12 +859,44 @@
     </div>
   </div>
 
+  <!-- Executive PIN Auth Modal -->
+  <div class="drawer" id="pin-drawer" style="max-height: 440px;">
+    <div class="drawer-handle" onclick="closeAllModals()"></div>
+    <div class="drawer-header">
+      <div class="drawer-title"><span>🔒</span> Executive Access</div>
+      <button class="btn-close" onclick="closeAllModals()">✖</button>
+    </div>
+    <div class="drawer-body" style="align-items: center; text-align: center; gap: 14px; padding: 24px 20px;">
+      <div style="font-size: 38px; margin-top: 4px;">🔐</div>
+      <div>
+        <div style="font-size: 16px; font-weight: 700; color: white;">Manager Hub Locked</div>
+        <div style="font-size: 12px; color: #94a3b8; margin-top: 4px; max-width: 280px; margin-left: auto; margin-right: auto; line-height: 1.4;">
+          Enter 4-digit Executive PIN to access door pricing, roster reset, and event controls.
+        </div>
+      </div>
+      <div style="width: 100%; max-width: 240px;">
+        <input id="exec-pin-input" type="password" inputmode="numeric" maxlength="8" placeholder="••••"
+          style="width: 100%; text-align: center; font-size: 26px; letter-spacing: 8px; padding: 10px; background: #0f172a; border: 2px solid rgba(255,255,255,0.2); border-radius: 12px; color: white; outline: none;"
+          onkeydown="if(event.key==='Enter') submitExecPin()">
+        <div id="pin-error-msg" style="color: #ef4444; font-size: 12px; font-weight: 600; margin-top: 8px; display: none;">
+          Incorrect PIN. Access Denied.
+        </div>
+      </div>
+      <button id="btn-submit-pin" class="btn-submit-walkin" style="width: 100%; max-width: 240px; margin-top: 4px;" onclick="submitExecPin()">
+        Unlock Manager Hub
+      </button>
+    </div>
+  </div>
+
   <!-- 2. EXECUTIVE MANAGER HUB DRAWER -->
   <div class="drawer" id="hub-drawer">
     <div class="drawer-handle" onclick="closeAllModals()"></div>
     <div class="drawer-header">
       <div class="drawer-title"><span>⚙️</span> Executive Manager Hub</div>
-      <button class="btn-close" onclick="closeAllModals()">✖</button>
+      <div style="display:flex; gap:8px; align-items:center;">
+        <button class="btn-hub-sub" style="background:#450a0a; border-color:rgba(239,68,68,0.4); color:#fca5a5; padding:6px 10px;" onclick="lockHub()" title="Lock Manager Hub">🔒 Lock</button>
+        <button class="btn-close" onclick="closeAllModals()">✖</button>
+      </div>
     </div>
     <div class="drawer-body">
       
@@ -1039,6 +1081,9 @@
         <div class="btn-danger-reset" onclick="confirmResetRoster()">
           ⚡ Reset Attendees Roster Back to Unchecked
         </div>
+        <div class="btn-hub-sub" style="text-align:center; padding:10px; border-radius:10px; background:#1e293b; cursor:pointer;" onclick="relockApp()">
+          🔒 Log Out & Re-Lock to Black Screen
+        </div>
       </div>
 
     </div>
@@ -1066,6 +1111,7 @@
     let audioCtx = null;
     let audioEnabled = false;
     let isSoundMuted = localStorage.getItem("CSS_SOUND_MUTED") === "true";
+    let currentExecPin = sessionStorage.getItem("CSS_EXEC_PIN") || "";
     let scanHistory = [];
     let selectedPayment = "Cash ($5)";
     let searchTimeout = null;
@@ -1230,11 +1276,16 @@
 
       updatePricingUI();
 
-      fetch(API_URL + "?action=setPricing&walkin=" + encodeURIComponent(WALKIN_PRICE) + "&membership=" + encodeURIComponent(MEMBERSHIP_PRICE))
+      fetch(API_URL + "?action=setPricing&walkin=" + encodeURIComponent(WALKIN_PRICE) + "&membership=" + encodeURIComponent(MEMBERSHIP_PRICE) + "&pin=" + encodeURIComponent(currentExecPin))
         .then(res => res.json())
         .then(d => {
           if (d.success) {
             alert(`✔ Pricing saved! Walk-Ins: $${WALKIN_PRICE} • Membership: $${MEMBERSHIP_PRICE}`);
+          } else if (d.error === "UNAUTHORIZED") {
+            lockHub();
+            alert(d.message || "Executive session expired. Please enter PIN again.");
+          } else {
+            alert("Error saving pricing: " + (d.message || "Unknown error"));
           }
         })
         .catch(e => console.warn("Pricing sync error:", e));
@@ -1368,7 +1419,7 @@
       const statusTag = document.getElementById("sheet-status-tag");
       if (statusTag) statusTag.innerText = "⏳ Connecting...";
 
-      fetch(API_URL + "?action=setSheet&sheetId=" + encodeURIComponent(sheetId))
+      fetch(API_URL + "?action=setSheet&sheetId=" + encodeURIComponent(sheetId) + "&pin=" + encodeURIComponent(currentExecPin))
         .then(res => res.json())
         .then(d => {
           if (d.success) {
@@ -1379,6 +1430,9 @@
             updateEventUI(d.activeEvent, true);
             fetchStats();
             document.getElementById("sheet-url-input").value = "";
+          } else if (d.error === "UNAUTHORIZED") {
+            lockHub();
+            alert(d.message || "Executive session expired. Please enter PIN again.");
           } else {
             alert("❌ Connection error: " + d.message);
             if (statusTag) statusTag.innerText = "🔴 Error";
@@ -1400,7 +1454,7 @@
       if (sheetId.includes("/d/")) {
         sheetId = sheetId.split("/d/")[1].split("/")[0];
       }
-      fetch(API_URL + "?action=setMembershipSheet&sheetId=" + encodeURIComponent(sheetId))
+      fetch(API_URL + "?action=setMembershipSheet&sheetId=" + encodeURIComponent(sheetId) + "&pin=" + encodeURIComponent(currentExecPin))
         .then(res => res.json())
         .then(d => {
           if (d.success) {
@@ -1410,6 +1464,9 @@
             tag.innerText = "🟢 Linked";
             tag.style.color = "#a855f7";
             document.getElementById("member-url-input").value = "";
+          } else if (d.error === "UNAUTHORIZED") {
+            lockHub();
+            alert(d.message || "Executive session expired. Please enter PIN again.");
           } else {
             alert("❌ " + d.message);
           }
@@ -1427,7 +1484,7 @@
       if (sheetId.includes("/d/")) {
         sheetId = sheetId.split("/d/")[1].split("/")[0];
       }
-      fetch(API_URL + "?action=setTicketSheet&sheetId=" + encodeURIComponent(sheetId))
+      fetch(API_URL + "?action=setTicketSheet&sheetId=" + encodeURIComponent(sheetId) + "&pin=" + encodeURIComponent(currentExecPin))
         .then(res => res.json())
         .then(d => {
           if (d.success) {
@@ -1437,6 +1494,9 @@
             tag.innerText = "🟢 Linked";
             tag.style.color = "#38bdf8";
             document.getElementById("ticket-url-input").value = "";
+          } else if (d.error === "UNAUTHORIZED") {
+            lockHub();
+            alert(d.message || "Executive session expired. Please enter PIN again.");
           } else {
             alert("❌ " + d.message);
           }
@@ -1598,6 +1658,7 @@
       document.getElementById("walkin-drawer").classList.remove("active");
       document.getElementById("newmember-drawer").classList.remove("active");
       document.getElementById("hub-drawer").classList.remove("active");
+      document.getElementById("pin-drawer").classList.remove("active");
       document.getElementById("recent-drawer").classList.remove("active");
     }
 
@@ -1622,11 +1683,70 @@
     }
 
     function openHub() {
+      if (currentExecPin) {
+        revealHubDrawer();
+      } else {
+        closeAllModals();
+        document.getElementById("modal-backdrop").classList.add("active");
+        document.getElementById("pin-drawer").classList.add("active");
+        const pinInput = document.getElementById("exec-pin-input");
+        pinInput.value = "";
+        document.getElementById("pin-error-msg").style.display = "none";
+        setTimeout(() => pinInput.focus(), 250);
+      }
+    }
+
+    function submitExecPin() {
+      const pinInput = document.getElementById("exec-pin-input");
+      const pin = pinInput.value.trim();
+      const errMsg = document.getElementById("pin-error-msg");
+      const btn = document.getElementById("btn-submit-pin");
+      if (!pin) {
+        pinInput.focus();
+        return;
+      }
+
+      btn.disabled = true;
+      btn.innerText = "⏳ Verifying...";
+      errMsg.style.display = "none";
+
+      fetch(API_URL + "?action=verifyPin&pin=" + encodeURIComponent(pin))
+        .then(res => res.json())
+        .then(d => {
+          btn.disabled = false;
+          btn.innerText = "Unlock Manager Hub";
+          if (d.success) {
+            currentExecPin = pin;
+            sessionStorage.setItem("CSS_EXEC_PIN", pin);
+            closeAllModals();
+            revealHubDrawer();
+          } else {
+            errMsg.style.display = "block";
+            errMsg.innerText = d.message || "Incorrect PIN. Access Denied.";
+            pinInput.value = "";
+            pinInput.focus();
+          }
+        })
+        .catch(err => {
+          btn.disabled = false;
+          btn.innerText = "Unlock Manager Hub";
+          errMsg.style.display = "block";
+          errMsg.innerText = "Verification error: " + err.message;
+        });
+    }
+
+    function revealHubDrawer() {
       closeAllModals();
       document.getElementById("modal-backdrop").classList.add("active");
       document.getElementById("hub-drawer").classList.add("active");
       document.getElementById("api-url-input").value = API_URL;
       fetchStats();
+    }
+
+    function lockHub() {
+      currentExecPin = "";
+      sessionStorage.removeItem("CSS_EXEC_PIN");
+      closeAllModals();
     }
 
     // --- Walk-In Management ---
@@ -1754,12 +1874,15 @@
     function changeActiveEvent() {
       const select = document.getElementById("event-select");
       const newTab = select.value;
-      fetch(API_URL + "?action=setEvent&tab=" + encodeURIComponent(newTab))
+      fetch(API_URL + "?action=setEvent&tab=" + encodeURIComponent(newTab) + "&pin=" + encodeURIComponent(currentExecPin))
         .then(res => res.json())
         .then(d => {
           if (d.success) {
             document.getElementById("header-event-name").innerText = d.activeEvent;
             fetchStats();
+          } else if (d.error === "UNAUTHORIZED") {
+            lockHub();
+            alert(d.message || "Executive session expired. Please enter PIN again.");
           }
         });
     }
@@ -1767,7 +1890,7 @@
     function createNewEvent() {
       const name = prompt("Enter new Event Sheet tab name (e.g., CodeCamp 2026):");
       if (!name || !name.trim()) return;
-      fetch(API_URL + "?action=setEvent&tab=" + encodeURIComponent(name.trim()))
+      fetch(API_URL + "?action=setEvent&tab=" + encodeURIComponent(name.trim()) + "&pin=" + encodeURIComponent(currentExecPin))
         .then(res => res.json())
         .then(d => {
           if (d.success) {
@@ -1779,6 +1902,9 @@
             select.appendChild(opt);
             document.getElementById("header-event-name").innerText = d.activeEvent;
             fetchStats();
+          } else if (d.error === "UNAUTHORIZED") {
+            lockHub();
+            alert(d.message || "Executive session expired. Please enter PIN again.");
           }
         });
     }
@@ -1788,12 +1914,15 @@
       const currentPaused = btn.classList.contains("paused");
       const targetActive = currentPaused;
 
-      fetch(API_URL + "?action=toggleEntry&active=" + targetActive)
+      fetch(API_URL + "?action=toggleEntry&active=" + targetActive + "&pin=" + encodeURIComponent(currentExecPin))
         .then(res => res.json())
         .then(d => {
           if (d.success) {
             const activeEvent = document.getElementById("header-event-name").innerText;
             updateEventUI(activeEvent, d.entryActive);
+          } else if (d.error === "UNAUTHORIZED") {
+            lockHub();
+            alert(d.message || "Executive session expired. Please enter PIN again.");
           }
         });
     }
@@ -2012,17 +2141,24 @@
     // --- Reset Action ---
     function confirmResetRoster() {
       if (confirm("Reset test attendees back to unchecked-in status in your Google Sheet?")) {
-        fetch(API_URL + "?action=reset")
+        fetch(API_URL + "?action=reset&pin=" + encodeURIComponent(currentExecPin))
           .then(res => res.json())
           .then(d => {
-            alert(d.message || "Reset complete!");
-            updateCount(0);
-            scanHistory = [];
-            document.getElementById("recent-count").innerText = "0";
-            document.getElementById("drawer-count").innerText = "0";
-            document.getElementById("drawer-body").innerHTML = '<div style="color:#64748b; text-align:center; padding: 40px 10px; font-size:14px;">Roster reset. Ready for new scans.</div>';
-            closeAllModals();
-            fetchStats();
+            if (d.success) {
+              alert(d.message || "Reset complete!");
+              updateCount(0);
+              scanHistory = [];
+              document.getElementById("recent-count").innerText = "0";
+              document.getElementById("drawer-count").innerText = "0";
+              document.getElementById("drawer-body").innerHTML = '<div style="color:#64748b; text-align:center; padding: 40px 10px; font-size:14px;">Roster reset. Ready for new scans.</div>';
+              closeAllModals();
+              fetchStats();
+            } else if (d.error === "UNAUTHORIZED") {
+              lockHub();
+              alert(d.message || "Executive session expired. Please enter PIN again.");
+            } else {
+              alert("Error resetting: " + (d.message || "Unknown error"));
+            }
           })
           .catch(err => alert("Error resetting: " + err.message));
       }
@@ -2100,7 +2236,64 @@
       });
     }
 
-    startCamera();
+    // --- Gatekeeper Passcode Lock ---
+    function checkGateLock() {
+      const isUnlocked = localStorage.getItem("CSS_APP_UNLOCKED") === "true";
+      const gateScreen = document.getElementById("gatekeeper-screen");
+      if (isUnlocked) {
+        if (gateScreen) gateScreen.style.display = "none";
+        startCamera();
+      } else {
+        if (gateScreen) gateScreen.style.display = "flex";
+        setTimeout(() => {
+          const passInput = document.getElementById("gate-pass-input");
+          if (passInput) passInput.focus();
+        }, 300);
+      }
+    }
+
+    function submitGatePass() {
+      const input = document.getElementById("gate-pass-input");
+      const err = document.getElementById("gate-error-msg");
+      const val = (input ? input.value : "").trim().toUpperCase();
+
+      // Accepts either "CSS" (club passcode) or "2006" (executive PIN)
+      if (val === "CSS" || val === "2006") {
+        localStorage.setItem("CSS_APP_UNLOCKED", "true");
+        if (val === "2006") {
+          currentExecPin = "2006";
+          sessionStorage.setItem("CSS_EXEC_PIN", "2006");
+        }
+        const gateScreen = document.getElementById("gatekeeper-screen");
+        if (gateScreen) {
+          gateScreen.style.opacity = "0";
+          gateScreen.style.transition = "opacity 0.25s ease";
+          setTimeout(() => {
+            gateScreen.style.display = "none";
+            startCamera();
+          }, 250);
+        } else {
+          startCamera();
+        }
+      } else {
+        if (input) {
+          input.style.borderColor = "#ef4444";
+          input.value = "";
+          input.focus();
+          setTimeout(() => {
+            if (input) input.style.borderColor = "rgba(255,255,255,0.12)";
+          }, 600);
+        }
+      }
+    }
+
+    function relockApp() {
+      localStorage.removeItem("CSS_APP_UNLOCKED");
+      sessionStorage.removeItem("CSS_EXEC_PIN");
+      window.location.reload();
+    }
+
+    checkGateLock();
   </script>
 </body>
 </html>

@@ -318,6 +318,26 @@
       border: 1px solid #cbd5e1;
       color: white;
     }
+    .status-verifying {
+      background: rgba(15, 23, 42, 0.96);
+      border: 1px solid #38bdf8;
+      color: white;
+      box-shadow: 0 0 25px rgba(56, 189, 248, 0.3);
+    }
+    .spinner-ring {
+      display: inline-block;
+      width: 14px;
+      height: 14px;
+      border: 2.5px solid rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      border-top-color: #38bdf8;
+      animation: spinRing 0.7s linear infinite;
+      vertical-align: middle;
+      margin-right: 6px;
+    }
+    @keyframes spinRing {
+      to { transform: rotate(360deg); }
+    }
 
     .banner-status-tag {
       font-size: 11px;
@@ -1216,7 +1236,24 @@
       sendCheckInRequest(ticketId);
     }
 
+    function showVerifyingBanner(ticketId) {
+      const banner = document.getElementById("result-banner");
+      if (!banner) return;
+      banner.className = "status-verifying";
+      const tagEl = document.getElementById("banner-status-tag");
+      if (tagEl) tagEl.innerHTML = '<span class="spinner-ring"></span> VERIFYING...';
+      const nameEl = document.getElementById("banner-name");
+      if (nameEl) nameEl.innerText = ticketId;
+      const detailsEl = document.getElementById("banner-details");
+      if (detailsEl) detailsEl.innerText = "Checking event roster...";
+      const actionsBox = document.getElementById("banner-actions");
+      if (actionsBox) actionsBox.style.display = "none";
+      banner.style.display = "block";
+    }
+
     function sendCheckInRequest(ticketId) {
+      showVerifyingBanner(ticketId);
+
       fetch(API_URL + "?ticket=" + encodeURIComponent(ticketId) + "&doorKey=" + getDoorKey() + "&scannedBy=" + encodeURIComponent(getVolunteerName()))
         .then(res => res.json())
         .then(data => {

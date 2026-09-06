@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>🐼 CSS Fast Door Scanner</title>
   <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
@@ -21,57 +21,98 @@
     
     /* Top Bar */
     .top-bar {
-      padding: 12px 16px;
+      padding: 10px 14px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      background: rgba(15, 23, 42, 0.92);
+      background: rgba(15, 23, 42, 0.94);
       backdrop-filter: blur(12px);
       z-index: 20;
       border-bottom: 1px solid rgba(255, 255, 255, 0.1);
     }
+    .brand-col {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
     .brand {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
       font-family: 'Outfit', sans-serif;
       font-weight: 800;
-      font-size: 16px;
+      font-size: 15px;
+      letter-spacing: -0.3px;
     }
+    .event-badge {
+      font-size: 11px;
+      color: #94a3b8;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      max-width: 140px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      cursor: pointer;
+    }
+    .event-badge .dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: #10b981;
+      display: inline-block;
+    }
+    .event-badge .dot.paused {
+      background: #ef4444;
+    }
+
     .top-actions {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
     }
-    .btn-recent {
-      background: #1e293b;
+    .btn-top {
       border: 1px solid rgba(255, 255, 255, 0.15);
-      color: #cbd5e1;
-      padding: 6px 12px;
+      color: #f1f5f9;
+      padding: 6px 10px;
       border-radius: 100px;
       font-size: 12px;
       font-weight: 600;
       cursor: pointer;
       display: flex;
       align-items: center;
-      gap: 5px;
-      transition: background 0.15s;
+      gap: 4px;
+      transition: all 0.15s ease;
+      background: #1e293b;
     }
-    .btn-recent:active {
+    .btn-top:active {
       transform: scale(0.95);
-      background: #334155;
+    }
+    .btn-walkin {
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      color: #ffffff;
+      font-weight: 700;
+      box-shadow: 0 2px 8px rgba(99, 102, 241, 0.35);
+    }
+    .btn-hub {
+      background: #1e293b;
+      border-color: rgba(255, 255, 255, 0.18);
     }
     .stat-badge {
       background: #10b981;
       color: white;
       font-weight: 800;
-      font-size: 13px;
-      padding: 6px 12px;
+      font-size: 12px;
+      padding: 6px 10px;
       border-radius: 100px;
       display: inline-flex;
       align-items: center;
-      gap: 5px;
-      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+      gap: 4px;
+      box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+      cursor: pointer;
     }
 
     /* Scanner Viewport */
@@ -141,13 +182,13 @@
       left: 16px;
       right: 16px;
       border-radius: 20px;
-      padding: 18px 20px;
+      padding: 16px 18px;
       text-align: center;
       z-index: 30;
       display: none;
-      animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+      animation: popIn 0.28s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
       backdrop-filter: blur(15px);
-      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.55);
     }
     @keyframes popIn {
       from { transform: translateY(30px) scale(0.95); opacity: 0; }
@@ -155,63 +196,84 @@
     }
     
     .status-checked-in {
-      background: rgba(16, 185, 129, 0.95);
+      background: rgba(16, 185, 129, 0.96);
       border: 1px solid #34d399;
       color: white;
     }
     .status-already-scanned {
-      background: rgba(245, 158, 11, 0.95);
+      background: rgba(245, 158, 11, 0.96);
       border: 1px solid #fbbf24;
       color: white;
     }
     .status-unpaid {
-      background: rgba(239, 68, 68, 0.95);
+      background: rgba(239, 68, 68, 0.96);
       border: 1px solid #f87171;
       color: white;
     }
+    .status-paused {
+      background: rgba(225, 29, 72, 0.96);
+      border: 1px solid #fb7185;
+      color: white;
+    }
     .status-invalid {
-      background: rgba(100, 116, 139, 0.95);
+      background: rgba(100, 116, 139, 0.96);
       border: 1px solid #cbd5e1;
       color: white;
     }
 
     .banner-title {
       font-family: 'Outfit', sans-serif;
-      font-size: 22px;
+      font-size: 20px;
       font-weight: 800;
       margin-bottom: 4px;
     }
     .banner-sub {
-      font-size: 14px;
+      font-size: 13px;
       opacity: 0.95;
       font-weight: 500;
     }
 
-    /* Slide-Up Drawer for Recent Scans */
-    .drawer-backdrop {
+    /* Sound prompt banner */
+    #sound-prompt {
+      position: absolute;
+      top: 60px;
+      left: 16px;
+      background: rgba(15, 23, 42, 0.92);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: white;
+      padding: 8px 14px;
+      border-radius: 100px;
+      font-size: 12px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      z-index: 25;
+      backdrop-filter: blur(8px);
+    }
+
+    /* Backdrop for Drawers and Modals */
+    .modal-backdrop {
       position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: rgba(0, 0, 0, 0.6);
-      backdrop-filter: blur(4px);
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0, 0, 0, 0.65);
+      backdrop-filter: blur(5px);
       z-index: 40;
       display: none;
       opacity: 0;
       transition: opacity 0.25s ease;
     }
-    .drawer-backdrop.active {
+    .modal-backdrop.active {
       display: block;
       opacity: 1;
     }
 
+    /* Generic Slide-Up Drawer */
     .drawer {
       position: fixed;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      max-height: 75vh;
+      left: 0; right: 0; bottom: 0;
+      max-height: 85vh;
       background: #0f172a;
       border-top-left-radius: 24px;
       border-top-right-radius: 24px;
@@ -226,16 +288,16 @@
     .drawer.active {
       transform: translateY(0);
     }
-
     .drawer-handle {
-      width: 40px;
+      width: 44px;
       height: 4px;
       background: #475569;
       border-radius: 10px;
       margin: 12px auto 6px;
+      cursor: pointer;
     }
     .drawer-header {
-      padding: 12px 20px 16px;
+      padding: 10px 20px 14px;
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -245,6 +307,9 @@
       font-family: 'Outfit', sans-serif;
       font-size: 18px;
       font-weight: 800;
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
     .btn-close {
       background: #1e293b;
@@ -259,81 +324,284 @@
       align-items: center;
       justify-content: center;
     }
-
     .drawer-body {
       flex: 1;
       overflow-y: auto;
       padding: 16px 20px;
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 12px;
+      -webkit-overflow-scrolling: touch;
     }
+
+    /* History Cards */
     .history-card {
       background: #1e293b;
       border: 1px solid rgba(255, 255, 255, 0.06);
       border-radius: 14px;
-      padding: 12px 16px;
+      padding: 12px 14px;
       display: flex;
       justify-content: space-between;
       align-items: center;
     }
     .hc-name {
       font-weight: 700;
-      font-size: 15px;
+      font-size: 14px;
       color: white;
     }
     .hc-id {
-      font-size: 12px;
+      font-size: 11px;
       color: #94a3b8;
       margin-top: 2px;
     }
     .hc-badge {
-      padding: 4px 10px;
+      padding: 4px 8px;
       border-radius: 100px;
-      font-size: 11px;
+      font-size: 10px;
       font-weight: 700;
       text-transform: uppercase;
+      letter-spacing: 0.3px;
     }
     .badge-green { background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid #10b981; }
     .badge-orange { background: rgba(245, 158, 11, 0.2); color: #fbbf24; border: 1px solid #f59e0b; }
     .badge-red { background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid #ef4444; }
+    .badge-purple { background: rgba(139, 92, 246, 0.2); color: #c084fc; border: 1px solid #8b5cf6; }
 
-    .drawer-footer {
-      padding: 14px 20px 24px;
-      border-top: 1px solid rgba(255, 255, 255, 0.08);
+    /* Walk-In Modal UI */
+    .walkin-form-group {
       display: flex;
-      gap: 10px;
+      flex-direction: column;
+      gap: 6px;
     }
-    .btn-reset-roster {
-      flex: 1;
-      background: #dc2626;
-      border: none;
-      color: white;
-      font-weight: 700;
-      font-size: 13px;
-      padding: 12px;
-      border-radius: 12px;
-      cursor: pointer;
-    }
-
-    /* Sound prompt banner */
-    #sound-prompt {
-      position: absolute;
-      top: 60px;
-      left: 16px;
-      background: rgba(15, 23, 42, 0.9);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      color: white;
-      padding: 8px 14px;
-      border-radius: 100px;
+    .walkin-label {
       font-size: 12px;
       font-weight: 600;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .input-field {
+      background: #1e293b;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 12px;
+      padding: 12px 14px;
+      color: white;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .input-field:focus {
+      border-color: #6366f1;
+    }
+    .pay-pill-group {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+    }
+    .pay-pill {
+      background: #1e293b;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: #cbd5e1;
+      padding: 10px;
+      border-radius: 12px;
+      font-size: 13px;
+      font-weight: 600;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .pay-pill.selected {
+      background: rgba(99, 102, 241, 0.2);
+      border-color: #6366f1;
+      color: #a5b4fc;
+      box-shadow: 0 0 10px rgba(99, 102, 241, 0.3);
+    }
+    .btn-submit-walkin {
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      border: none;
+      color: white;
+      font-family: 'Outfit', sans-serif;
+      font-size: 16px;
+      font-weight: 700;
+      padding: 14px;
+      border-radius: 14px;
+      cursor: pointer;
+      margin-top: 6px;
+      box-shadow: 0 4px 15px rgba(99, 102, 241, 0.4);
+    }
+    .btn-submit-walkin:active {
+      transform: scale(0.98);
+    }
+
+    /* Hub Sections & Controls */
+    .hub-section {
+      background: #1e293b;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 16px;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .hub-section-title {
+      font-size: 12px;
+      font-weight: 700;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .event-select-row {
+      display: flex;
+      gap: 8px;
+    }
+    .select-field {
+      flex: 1;
+      background: #0f172a;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 10px;
+      padding: 10px;
+      color: white;
+      font-size: 14px;
+      font-weight: 600;
+      outline: none;
+    }
+    .btn-hub-sub {
+      background: #334155;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: white;
+      padding: 0 12px;
+      border-radius: 10px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .entry-toggle-card {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #0f172a;
+      border-radius: 12px;
+      padding: 10px 14px;
+    }
+    .entry-status-text {
+      font-size: 13px;
+      font-weight: 600;
+    }
+    .btn-toggle-entry {
+      background: #10b981;
+      border: none;
+      color: white;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 6px 12px;
+      border-radius: 100px;
+      cursor: pointer;
+    }
+    .btn-toggle-entry.paused {
+      background: #ef4444;
+    }
+
+    /* Stats Grid */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+    }
+    .stat-card {
+      background: #0f172a;
+      border-radius: 12px;
+      padding: 10px 6px;
+      text-align: center;
+    }
+    .stat-val {
+      font-family: 'Outfit', sans-serif;
+      font-size: 18px;
+      font-weight: 800;
+      color: #38bdf8;
+    }
+    .stat-lbl {
+      font-size: 10px;
+      font-weight: 600;
+      color: #94a3b8;
+      margin-top: 2px;
+      text-transform: uppercase;
+    }
+
+    /* Manual Search Results */
+    .search-result-card {
+      background: #0f172a;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      padding: 10px 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .btn-manual-checkin {
+      background: #10b981;
+      border: none;
+      color: white;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 6px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .btn-manual-checkin.done {
+      background: #334155;
+      color: #94a3b8;
+      cursor: default;
+    }
+
+    /* API Connection Config Box */
+    .api-config-box {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .api-status-badge {
+      font-size: 11px;
+      font-weight: 600;
+      color: #10b981;
       display: flex;
       align-items: center;
+      gap: 4px;
+    }
+    .api-presets {
+      display: flex;
       gap: 6px;
+      flex-wrap: wrap;
+    }
+    .btn-preset {
+      background: #0f172a;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: #cbd5e1;
+      font-size: 11px;
+      font-weight: 600;
+      padding: 6px 10px;
+      border-radius: 8px;
       cursor: pointer;
-      z-index: 25;
-      backdrop-filter: blur(8px);
+    }
+    .btn-preset:active {
+      background: #334155;
+    }
+
+    /* Danger Reset Button */
+    .btn-danger-reset {
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid rgba(239, 68, 68, 0.4);
+      color: #f87171;
+      font-size: 12px;
+      font-weight: 600;
+      padding: 10px;
+      border-radius: 10px;
+      cursor: pointer;
+      text-align: center;
     }
   </style>
 </head>
@@ -341,14 +609,27 @@
 
   <!-- Top Bar -->
   <div class="top-bar">
-    <div class="brand">
-      <span>🐼</span> CSS Scanner
+    <div class="brand-col">
+      <div class="brand">
+        <span>🐼</span> CSS Scanner
+      </div>
+      <div class="event-badge" onclick="openHub()">
+        <span class="dot" id="event-dot"></span>
+        <span id="header-event-name">Loading...</span>
+      </div>
     </div>
+    
     <div class="top-actions">
-      <button class="btn-recent" onclick="openDrawer()">
-        <span>📋</span> Recent (<span id="recent-count">0</span>)
+      <button class="btn-top btn-walkin" onclick="openWalkinModal()">
+        <span>➕</span> Walk-In
       </button>
-      <div class="stat-badge" onclick="confirmResetRoster()">
+      <button class="btn-top btn-hub" onclick="openHub()">
+        <span>⚙️</span> Hub
+      </button>
+      <button class="btn-top" onclick="openDrawer()">
+        <span>📋</span> <span id="recent-count">0</span>
+      </button>
+      <div class="stat-badge" onclick="openHub()">
         <span>👥</span> <span id="count-display">0</span>
       </div>
     </div>
@@ -356,7 +637,7 @@
 
   <!-- Audio Unlock Prompt -->
   <div id="sound-prompt" onclick="enableAudio()">
-    <span>🔊</span> Tap for Chimes
+    <span>🔊</span> Tap for Sound Chimes
   </div>
 
   <!-- Scanner Container -->
@@ -378,21 +659,147 @@
     </div>
   </div>
 
-  <!-- Slide-Up Drawer for Recent Scans -->
-  <div class="drawer-backdrop" id="drawer-backdrop" onclick="closeDrawer()"></div>
-  <div class="drawer" id="drawer">
-    <div class="drawer-handle" onclick="closeDrawer()"></div>
+  <!-- Backdrop for All Modals / Drawers -->
+  <div class="modal-backdrop" id="modal-backdrop" onclick="closeAllModals()"></div>
+
+  <!-- 1. WALK-IN ATTENDEE MODAL -->
+  <div class="drawer" id="walkin-drawer">
+    <div class="drawer-handle" onclick="closeAllModals()"></div>
     <div class="drawer-header">
-      <div class="drawer-title">📋 Recent Scans (<span id="drawer-count">0</span>)</div>
-      <button class="btn-close" onclick="closeDrawer()">✖</button>
+      <div class="drawer-title"><span>➕</span> Log Walk-In Attendee</div>
+      <button class="btn-close" onclick="closeAllModals()">✖</button>
+    </div>
+    <div class="drawer-body">
+      <div class="walkin-form-group">
+        <label class="walkin-label">Attendee Name</label>
+        <input class="input-field" id="walkin-name" type="text" placeholder="e.g. John Doe (optional)">
+      </div>
+      <div class="walkin-form-group">
+        <label class="walkin-label">UCID (Student ID)</label>
+        <input class="input-field" id="walkin-ucid" type="number" inputmode="numeric" placeholder="e.g. 30123456 (optional)">
+      </div>
+      <div class="walkin-form-group">
+        <label class="walkin-label">Payment Method</label>
+        <div class="pay-pill-group">
+          <div class="pay-pill selected" onclick="selectPay(this, 'Cash ($5)')">💵 Cash ($5)</div>
+          <div class="pay-pill" onclick="selectPay(this, 'E-Transfer ($5)')">📱 E-Transfer ($5)</div>
+          <div class="pay-pill" onclick="selectPay(this, 'Free Entry')">🆓 Free Entry</div>
+          <div class="pay-pill" onclick="selectPay(this, 'Custom')">✏️ Custom</div>
+        </div>
+        <input class="input-field" id="walkin-custom-pay" type="text" placeholder="Enter custom amount or note" style="display:none; margin-top:6px;">
+      </div>
+      <button class="btn-submit-walkin" id="btn-submit-walkin" onclick="submitWalkIn()">
+        ➕ Record & Check In Walk-In
+      </button>
+    </div>
+  </div>
+
+  <!-- 2. EXECUTIVE MANAGER HUB DRAWER -->
+  <div class="drawer" id="hub-drawer">
+    <div class="drawer-handle" onclick="closeAllModals()"></div>
+    <div class="drawer-header">
+      <div class="drawer-title"><span>⚙️</span> Executive Manager Hub</div>
+      <button class="btn-close" onclick="closeAllModals()">✖</button>
+    </div>
+    <div class="drawer-body">
+      
+      <!-- Section: Active Event Target -->
+      <div class="hub-section">
+        <div class="hub-section-title">
+          <span>Active Event Sheet Tab</span>
+          <button class="btn-hub-sub" onclick="createNewEvent()">+ New Sheet</button>
+        </div>
+        <div class="event-select-row">
+          <select class="select-field" id="event-select" onchange="changeActiveEvent()">
+            <option value="Winter Gala 2026">Winter Gala 2026</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Section: Door Entry Status Toggle -->
+      <div class="hub-section">
+        <div class="hub-section-title">Door Entry Lock</div>
+        <div class="entry-toggle-card">
+          <div class="entry-status-text" id="entry-status-label">🟢 Entry Open</div>
+          <button class="btn-toggle-entry" id="btn-toggle-entry" onclick="toggleEntryState()">
+            Pause Entry
+          </button>
+        </div>
+      </div>
+
+      <!-- Section: Live Event Breakdown Stats -->
+      <div class="hub-section">
+        <div class="hub-section-title">
+          <span>Live Breakdown</span>
+          <button class="btn-hub-sub" onclick="fetchStats()">🔄 Refresh</button>
+        </div>
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-val" id="stat-total">0</div>
+            <div class="stat-lbl">Total</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-val" id="stat-tickets">0</div>
+            <div class="stat-lbl">Tickets</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-val" id="stat-members">0</div>
+            <div class="stat-lbl">Members</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-val" id="stat-walkins">0</div>
+            <div class="stat-lbl">Walk-Ins</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section: Manual Lookup (Phone Died) -->
+      <div class="hub-section">
+        <div class="hub-section-title">Manual Attendee Lookup</div>
+        <input class="input-field" id="hub-search-input" type="search" placeholder="Search Name, UCID, or Ticket ID..." oninput="onSearchInput()">
+        <div id="hub-search-results" style="display:flex; flex-direction:column; gap:6px;"></div>
+      </div>
+
+      <!-- Section: Backend Connection / Sheet Switcher -->
+      <div class="hub-section">
+        <div class="hub-section-title">
+          <span>Backend Deployment URL</span>
+          <span class="api-status-badge" id="api-status-tag">🟢 Active</span>
+        </div>
+        <div class="api-config-box">
+          <div class="api-presets">
+            <button class="btn-preset" onclick="setApiPreset('sandbox')">🧪 Sandbox Test</button>
+            <button class="btn-preset" onclick="setApiPreset('prod')">🚀 Production RSVP</button>
+            <button class="btn-preset" onclick="resetApiToDefault()">↺ Default</button>
+          </div>
+          <input class="input-field" id="api-url-input" type="text" placeholder="https://script.google.com/macros/s/.../exec">
+          <button class="btn-hub-sub" style="padding:10px; border-radius:10px;" onclick="saveCustomApiUrl()">
+            💾 Save & Connect Backend
+          </button>
+        </div>
+      </div>
+
+      <!-- Section: Danger / Session Reset -->
+      <div class="hub-section">
+        <div class="btn-danger-reset" onclick="confirmResetRoster()">
+          ⚡ Reset Test Attendees Roster Back to Unchecked
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- 3. RECENT SCANS DRAWER -->
+  <div class="drawer" id="recent-drawer">
+    <div class="drawer-handle" onclick="closeAllModals()"></div>
+    <div class="drawer-header">
+      <div class="drawer-title"><span>📋</span> Recent Scans (<span id="drawer-count">0</span>)</div>
+      <button class="btn-close" onclick="closeAllModals()">✖</button>
     </div>
     <div class="drawer-body" id="drawer-body">
       <div style="color:#64748b; text-align:center; padding: 40px 10px; font-size:14px;">
         No scans in this session yet.<br>Point camera at attendee QR codes to check them in.
       </div>
-    </div>
-    <div class="drawer-footer">
-      <button class="btn-reset-roster" onclick="confirmResetRoster()">⚡ Reset Test Attendees Roster</button>
     </div>
   </div>
 
@@ -404,9 +811,31 @@
     let audioCtx = null;
     let audioEnabled = false;
     let scanHistory = [];
+    let selectedPayment = "Cash ($5)";
+    let searchTimeout = null;
 
-    // Apps Script Deployment API URL
-    const API_URL = "https://script.google.com/macros/s/AKfycbzr8duP390SpoC7o0k3fsCDAOc3nkjHoGqPRiewrqHngalE_EcPaEaMv0408BAjnMDM4w/exec";
+    // --- Dynamic API Configuration ---
+    // Default: Sandbox Web App Deployment
+    const DEFAULT_API_URL = "https://script.google.com/macros/s/AKfycbzr8duP390SpoC7o0k3fsCDAOc3nkjHoGqPRiewrqHngalE_EcPaEaMv0408BAjnMDM4w/exec";
+    
+    // Preset URLs for 1-tap environment switching
+    const PRESETS = {
+      sandbox: "https://script.google.com/macros/s/AKfycbzr8duP390SpoC7o0k3fsCDAOc3nkjHoGqPRiewrqHngalE_EcPaEaMv0408BAjnMDM4w/exec",
+      prod: "" // Will be set when user promotes to production
+    };
+
+    function getApiUrl() {
+      // Priority 1: Query param (?api=https://...)
+      const urlParam = new URLSearchParams(window.location.search).get("api");
+      if (urlParam) return urlParam;
+      // Priority 2: LocalStorage (saved via Manager Hub)
+      const stored = localStorage.getItem("CSS_SCANNER_API_URL");
+      if (stored) return stored;
+      // Priority 3: Built-in default
+      return DEFAULT_API_URL;
+    }
+
+    let API_URL = getApiUrl();
 
     // Auto-unlock audio on any user tap
     document.addEventListener("click", () => {
@@ -458,24 +887,73 @@
       osc.stop(now + 0.3);
     }
 
-    // --- Fetch initial count from Google Sheet on page load ---
-    fetch(API_URL + "?action=count")
-      .then(res => res.json())
-      .then(d => {
-        if (d && d.totalCheckedIn !== undefined) {
-          updateCount(d.totalCheckedIn);
-        }
-      })
-      .catch(e => console.log("Initial count fetch error:", e));
+    // --- Initial Data Load ---
+    function initSystem() {
+      API_URL = getApiUrl();
+      const input = document.getElementById("api-url-input");
+      if (input) input.value = API_URL;
+
+      fetch(API_URL + "?action=events")
+        .then(res => res.json())
+        .then(d => {
+          if (d.success) {
+            updateEventUI(d.activeEvent, d.entryActive);
+            populateEventSelect(d.events, d.activeEvent);
+          }
+        })
+        .catch(e => console.log("Events load fallback:", e));
+
+      fetch(API_URL + "?action=count")
+        .then(res => res.json())
+        .then(d => {
+          if (d && d.totalCheckedIn !== undefined) {
+            updateCount(d.totalCheckedIn);
+            if (d.activeEvent) updateEventUI(d.activeEvent, d.entryActive);
+          }
+        })
+        .catch(e => console.log("Initial count fetch error:", e));
+    }
+    initSystem();
 
     function updateCount(num) {
       document.getElementById("count-display").innerText = num;
+      document.getElementById("stat-total").innerText = num;
+    }
+
+    function updateEventUI(eventName, entryActive) {
+      document.getElementById("header-event-name").innerText = eventName || "Winter Gala 2026";
+      const dot = document.getElementById("event-dot");
+      const label = document.getElementById("entry-status-label");
+      const btn = document.getElementById("btn-toggle-entry");
+
+      if (entryActive === false) {
+        dot.className = "dot paused";
+        label.innerText = "🔴 Entry Paused";
+        btn.innerText = "Resume Entry";
+        btn.className = "btn-toggle-entry paused";
+      } else {
+        dot.className = "dot";
+        label.innerText = "🟢 Entry Open";
+        btn.innerText = "Pause Entry";
+        btn.className = "btn-toggle-entry";
+      }
+    }
+
+    function populateEventSelect(events, active) {
+      const select = document.getElementById("event-select");
+      select.innerHTML = "";
+      (events || [active || "Winter Gala 2026"]).forEach(ev => {
+        const opt = document.createElement("option");
+        opt.value = ev;
+        opt.innerText = ev;
+        if (ev === active) opt.selected = true;
+        select.appendChild(opt);
+      });
     }
 
     // --- QR Scan Handler ---
     function onScanSuccess(decodedText) {
       const now = Date.now();
-      // Debounce: ignore same code within 2.5 seconds
       if (decodedText === lastScannedText && (now - lastScanTime < 2500)) {
         return;
       }
@@ -485,7 +963,6 @@
       lastScannedText = decodedText;
       isProcessing = true;
 
-      // Extract ID from full URL or raw code
       let ticketId = decodedText.trim();
       if (ticketId.includes("ticket=")) {
         ticketId = ticketId.split("ticket=")[1].split("&")[0];
@@ -495,6 +972,10 @@
         ticketId = ticketId.split("id=")[1].split("&")[0];
       }
 
+      sendCheckInRequest(ticketId);
+    }
+
+    function sendCheckInRequest(ticketId) {
       fetch(API_URL + "?ticket=" + encodeURIComponent(ticketId))
         .then(res => res.json())
         .then(data => {
@@ -521,13 +1002,18 @@
 
       } else if (data.status === "ALREADY_SCANNED") {
         playWarningSound();
-        showBanner("status-already-scanned", "⚠ Already Scanned", (data.name || "Attendee") + " • First checked in: " + (data.time || "earlier"));
+        showBanner("status-already-scanned", "⚠ Already Scanned", (data.name || "Attendee") + " • Checked in: " + (data.time || "earlier"));
         addHistoryRecord(data.name, data.id || ticketId, "Already Scanned", "badge-orange", timeStr);
 
       } else if (data.status === "UNPAID") {
         playWarningSound();
         showBanner("status-unpaid", "💳 Payment Required", (data.name || "Attendee") + " • " + (data.message || "Unpaid"));
         addHistoryRecord(data.name, data.id || ticketId, "Unpaid", "badge-red", timeStr);
+
+      } else if (data.status === "ENTRY_PAUSED") {
+        playWarningSound();
+        showBanner("status-paused", "⏸ Door Entry Paused", data.message || "Entry is currently paused");
+        addHistoryRecord(data.name || "Attendee", ticketId, "Entry Paused", "badge-red", timeStr);
 
       } else {
         playWarningSound();
@@ -548,24 +1034,260 @@
       }, 3000);
     }
 
-    // --- Drawer & History Management ---
+    // --- Modal & Drawer Navigation ---
+    function closeAllModals() {
+      document.getElementById("modal-backdrop").classList.remove("active");
+      document.getElementById("walkin-drawer").classList.remove("active");
+      document.getElementById("hub-drawer").classList.remove("active");
+      document.getElementById("recent-drawer").classList.remove("active");
+    }
+
     function openDrawer() {
-      document.getElementById("drawer-backdrop").classList.add("active");
-      document.getElementById("drawer").classList.add("active");
+      closeAllModals();
+      document.getElementById("modal-backdrop").classList.add("active");
+      document.getElementById("recent-drawer").classList.add("active");
     }
 
-    function closeDrawer() {
-      document.getElementById("drawer-backdrop").classList.remove("active");
-      document.getElementById("drawer").classList.remove("active");
+    function openWalkinModal() {
+      closeAllModals();
+      document.getElementById("modal-backdrop").classList.add("active");
+      document.getElementById("walkin-drawer").classList.add("active");
+      setTimeout(() => document.getElementById("walkin-name").focus(), 300);
     }
 
+    function openHub() {
+      closeAllModals();
+      document.getElementById("modal-backdrop").classList.add("active");
+      document.getElementById("hub-drawer").classList.add("active");
+      document.getElementById("api-url-input").value = API_URL;
+      fetchStats();
+    }
+
+    // --- Walk-In Management ---
+    function selectPay(el, method) {
+      document.querySelectorAll(".pay-pill").forEach(p => p.classList.remove("selected"));
+      el.classList.add("selected");
+      selectedPayment = method;
+      const customInput = document.getElementById("walkin-custom-pay");
+      customInput.style.display = (method === 'Custom') ? 'block' : 'none';
+      if (method === 'Custom') customInput.focus();
+    }
+
+    function submitWalkIn() {
+      const nameInput = document.getElementById("walkin-name");
+      const ucidInput = document.getElementById("walkin-ucid");
+      const customInput = document.getElementById("walkin-custom-pay");
+      const submitBtn = document.getElementById("btn-submit-walkin");
+
+      const name = nameInput.value.trim() || "Walk-In Guest";
+      const ucid = ucidInput.value.trim() || "N/A";
+      let pay = selectedPayment;
+      if (pay === "Custom") {
+        pay = customInput.value.trim() || "Custom";
+      }
+
+      submitBtn.disabled = true;
+      submitBtn.innerText = "⏳ Recording...";
+
+      fetch(API_URL + "?action=walkin&name=" + encodeURIComponent(name) + "&ucid=" + encodeURIComponent(ucid) + "&payment=" + encodeURIComponent(pay))
+        .then(res => res.json())
+        .then(d => {
+          submitBtn.disabled = false;
+          submitBtn.innerText = "➕ Record & Check In Walk-In";
+          if (d.success) {
+            closeAllModals();
+            playSuccessSound();
+            showBanner("status-checked-in", "✔ Walk-In Logged!", name + " • " + pay);
+            if (d.totalCheckedIn !== undefined) updateCount(d.totalCheckedIn);
+            const timeStr = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+            addHistoryRecord(name, d.id + " • Walk-In", pay, "badge-purple", timeStr);
+            nameInput.value = "";
+            ucidInput.value = "";
+            customInput.value = "";
+          } else {
+            alert("Walk-in error: " + d.message);
+          }
+        })
+        .catch(err => {
+          submitBtn.disabled = false;
+          submitBtn.innerText = "➕ Record & Check In Walk-In";
+          alert("Network error logging walk-in: " + err.message);
+        });
+    }
+
+    // --- Executive Hub Actions ---
+    function changeActiveEvent() {
+      const select = document.getElementById("event-select");
+      const newTab = select.value;
+      fetch(API_URL + "?action=setEvent&tab=" + encodeURIComponent(newTab))
+        .then(res => res.json())
+        .then(d => {
+          if (d.success) {
+            document.getElementById("header-event-name").innerText = d.activeEvent;
+            fetchStats();
+          }
+        });
+    }
+
+    function createNewEvent() {
+      const name = prompt("Enter new Event Sheet tab name (e.g., CodeCamp 2026):");
+      if (!name || !name.trim()) return;
+      fetch(API_URL + "?action=setEvent&tab=" + encodeURIComponent(name.trim()))
+        .then(res => res.json())
+        .then(d => {
+          if (d.success) {
+            const select = document.getElementById("event-select");
+            const opt = document.createElement("option");
+            opt.value = d.activeEvent;
+            opt.innerText = d.activeEvent;
+            opt.selected = true;
+            select.appendChild(opt);
+            document.getElementById("header-event-name").innerText = d.activeEvent;
+            fetchStats();
+          }
+        });
+    }
+
+    function toggleEntryState() {
+      const btn = document.getElementById("btn-toggle-entry");
+      const currentPaused = btn.classList.contains("paused");
+      const targetActive = currentPaused;
+
+      fetch(API_URL + "?action=toggleEntry&active=" + targetActive)
+        .then(res => res.json())
+        .then(d => {
+          if (d.success) {
+            const activeEvent = document.getElementById("header-event-name").innerText;
+            updateEventUI(activeEvent, d.entryActive);
+          }
+        });
+    }
+
+    function fetchStats() {
+      fetch(API_URL + "?action=stats")
+        .then(res => res.json())
+        .then(d => {
+          if (d.success) {
+            document.getElementById("stat-total").innerText = d.total || 0;
+            document.getElementById("stat-tickets").innerText = d.tickets || 0;
+            document.getElementById("stat-members").innerText = d.members || 0;
+            document.getElementById("stat-walkins").innerText = d.walkins || 0;
+            updateCount(d.total || 0);
+          }
+        })
+        .catch(e => console.log("Stats fetch error:", e));
+    }
+
+    // --- Attendee Lookup / Phone Died ---
+    function onSearchInput() {
+      clearTimeout(searchTimeout);
+      const q = document.getElementById("hub-search-input").value.trim();
+      const resultsBox = document.getElementById("hub-search-results");
+      if (!q) {
+        resultsBox.innerHTML = "";
+        return;
+      }
+      searchTimeout = setTimeout(() => {
+        resultsBox.innerHTML = '<div style="color:#94a3b8; font-size:12px; text-align:center; padding:8px;">Searching roster...</div>';
+        fetch(API_URL + "?action=search&q=" + encodeURIComponent(q))
+          .then(res => res.json())
+          .then(d => {
+            resultsBox.innerHTML = "";
+            if (!d.results || d.results.length === 0) {
+              resultsBox.innerHTML = '<div style="color:#64748b; font-size:12px; text-align:center; padding:8px;">No matching attendees found.</div>';
+              return;
+            }
+            d.results.forEach(att => {
+              const card = document.createElement("div");
+              card.className = "search-result-card";
+              card.innerHTML = `
+                <div>
+                  <div style="font-weight:700; font-size:13px; color:white;">${att.name}</div>
+                  <div style="font-size:11px; color:#94a3b8;">${att.id} • UCID: ${att.ucid || "N/A"}</div>
+                  <div style="font-size:10px; margin-top:2px;">
+                    ${att.paid ? '<span style="color:#34d399;">● Paid</span>' : '<span style="color:#f87171;">● Unpaid</span>'}
+                    ${att.checkedIn ? '<span style="color:#94a3b8; margin-left:6px;">(Checked In ' + att.time + ')</span>' : ''}
+                  </div>
+                </div>
+                <div>
+                  ${att.checkedIn 
+                    ? '<button class="btn-manual-checkin done" disabled>✔ Checked In</button>'
+                    : `<button class="btn-manual-checkin" onclick="manualCheckInAttendee('${att.id}', this)">Check In</button>`
+                  }
+                </div>
+              `;
+              resultsBox.appendChild(card);
+            });
+          })
+          .catch(e => {
+            resultsBox.innerHTML = '<div style="color:#f87171; font-size:12px;">Search error: ' + e.message + '</div>';
+          });
+      }, 300);
+    }
+
+    function manualCheckInAttendee(ticketId, btnElement) {
+      btnElement.disabled = true;
+      btnElement.innerText = "⏳...";
+      fetch(API_URL + "?ticket=" + encodeURIComponent(ticketId))
+        .then(res => res.json())
+        .then(data => {
+          handleScanResult(data, ticketId);
+          if (data.status === "CHECKED_IN") {
+            btnElement.className = "btn-manual-checkin done";
+            btnElement.innerText = "✔ Checked In";
+            fetchStats();
+          } else {
+            btnElement.disabled = false;
+            btnElement.innerText = "Check In";
+          }
+        })
+        .catch(e => {
+          btnElement.disabled = false;
+          btnElement.innerText = "Check In";
+          alert("Check-in error: " + e.message);
+        });
+    }
+
+    // --- Dynamic API Configuration Controls ---
+    function setApiPreset(type) {
+      if (type === 'sandbox') {
+        document.getElementById('api-url-input').value = PRESETS.sandbox;
+      } else if (type === 'prod') {
+        const prodUrl = prompt("Enter your Production Apps Script Deployment URL (or leave blank to cancel):", PRESETS.prod || "");
+        if (prodUrl && prodUrl.trim()) {
+          document.getElementById('api-url-input').value = prodUrl.trim();
+        }
+      }
+    }
+
+    function saveCustomApiUrl() {
+      const input = document.getElementById("api-url-input").value.trim();
+      if (!input || !input.startsWith("https://")) {
+        alert("Please enter a valid HTTPS Google Apps Script URL.");
+        return;
+      }
+      localStorage.setItem("CSS_SCANNER_API_URL", input);
+      API_URL = input;
+      alert("Backend connected! Re-syncing roster...");
+      initSystem();
+      closeAllModals();
+    }
+
+    function resetApiToDefault() {
+      localStorage.removeItem("CSS_SCANNER_API_URL");
+      API_URL = DEFAULT_API_URL;
+      document.getElementById("api-url-input").value = DEFAULT_API_URL;
+      alert("Reset back to default Sandbox backend!");
+      initSystem();
+    }
+
+    // --- History Management ---
     function addHistoryRecord(name, id, status, badgeClass, time) {
       scanHistory.unshift({ name, id, status, badgeClass, time });
       document.getElementById("recent-count").innerText = scanHistory.length;
       document.getElementById("drawer-count").innerText = scanHistory.length;
 
       const body = document.getElementById("drawer-body");
-      // Remove placeholder
       if (scanHistory.length === 1) body.innerHTML = "";
 
       const card = document.createElement("div");
@@ -592,7 +1314,8 @@
             document.getElementById("recent-count").innerText = "0";
             document.getElementById("drawer-count").innerText = "0";
             document.getElementById("drawer-body").innerHTML = '<div style="color:#64748b; text-align:center; padding: 40px 10px; font-size:14px;">Roster reset. Ready for new scans.</div>';
-            closeDrawer();
+            closeAllModals();
+            fetchStats();
           })
           .catch(err => alert("Error resetting: " + err.message));
       }

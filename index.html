@@ -104,6 +104,41 @@
       font-weight: 700;
       box-shadow: 0 2px 8px rgba(99, 102, 241, 0.35);
     }
+    .btn-new-member {
+      background: linear-gradient(135deg, #ec4899, #a855f7);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      color: #ffffff;
+      font-weight: 700;
+      box-shadow: 0 2px 8px rgba(236, 72, 153, 0.35);
+    }
+    .btn-pay-action {
+      border: none;
+      color: white;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 6px 9px;
+      border-radius: 8px;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: transform 0.1s ease;
+    }
+    .btn-pay-action:active { transform: scale(0.95); }
+    .btn-pay-action.cash { background: #10b981; }
+    .btn-pay-action.etransfer { background: #6366f1; }
+    .banner-action-btn {
+      border: none;
+      color: white;
+      font-size: 12px;
+      font-weight: 700;
+      padding: 8px 12px;
+      border-radius: 10px;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+      transition: transform 0.1s ease;
+    }
+    .banner-action-btn:active { transform: scale(0.95); }
+    .banner-action-btn.cash { background: #10b981; }
+    .banner-action-btn.etransfer { background: #3b82f6; }
     .btn-hub {
       background: #1e293b;
       border-color: rgba(255, 255, 255, 0.25);
@@ -663,8 +698,8 @@
       <button class="btn-top btn-walkin" onclick="openWalkinModal()">
         <span>➕</span> Walk-In
       </button>
-      <button class="btn-top btn-hub" onclick="openHub()">
-        <span>⚙️</span> Hub
+      <button class="btn-top btn-new-member" onclick="openNewMemberModal()">
+        <span>💳</span> +Member
       </button>
       <button class="btn-top" onclick="openDrawer()">
         <span>📋</span> <span id="recent-count">0</span>
@@ -705,6 +740,7 @@
       <div class="banner-status-tag" id="banner-status-tag">✔ CHECKED IN</div>
       <div class="banner-name" id="banner-name">Alice Wong</div>
       <div class="banner-details" id="banner-details">UCID: 30111111 • Member Card</div>
+      <div id="banner-actions" style="display:none; margin-top:10px;"></div>
     </div>
   </div>
 
@@ -730,8 +766,8 @@
       <div class="walkin-form-group">
         <label class="walkin-label">Payment Method</label>
         <div class="pay-pill-group">
-          <div class="pay-pill selected" onclick="selectPay(this, 'Cash ($5)')">💵 Cash ($5)</div>
-          <div class="pay-pill" onclick="selectPay(this, 'E-Transfer ($5)')">📱 E-Transfer ($5)</div>
+          <div class="pay-pill selected" id="walkin-pay-cash" onclick="selectPay(this, 'Cash')">💵 Cash ($5)</div>
+          <div class="pay-pill" id="walkin-pay-etransfer" onclick="selectPay(this, 'E-Transfer')">📱 E-Transfer ($5)</div>
           <div class="pay-pill" onclick="selectPay(this, 'Free Entry')">🆓 Free Entry</div>
           <div class="pay-pill" onclick="selectPay(this, 'Custom')">✏️ Custom</div>
         </div>
@@ -739,6 +775,42 @@
       </div>
       <button class="btn-submit-walkin" id="btn-submit-walkin" onclick="submitWalkIn()">
         ➕ Record & Check In Walk-In
+      </button>
+    </div>
+  </div>
+
+  <!-- 1b. QUICK ADD MEMBERSHIP MODAL -->
+  <div class="drawer" id="newmember-drawer">
+    <div class="drawer-handle" onclick="closeAllModals()"></div>
+    <div class="drawer-header">
+      <div class="drawer-title" id="newmember-drawer-title"><span>💳</span> Quick Add Member ($5.00)</div>
+      <button class="btn-close" onclick="closeAllModals()">✖</button>
+    </div>
+    <div class="drawer-body">
+      <div style="font-size: 12px; color: #94a3b8; line-height: 1.4;">
+        Register a student buying CSS membership at the door. Checks the box in the membership sheet and admits them immediately!
+      </div>
+      <div class="walkin-form-group">
+        <label class="walkin-label">Student Full Name *</label>
+        <input class="input-field" id="newmember-name" type="text" placeholder="e.g. John Doe">
+      </div>
+      <div class="walkin-form-group">
+        <label class="walkin-label">UCID (8 Digits) *</label>
+        <input class="input-field" id="newmember-ucid" type="number" inputmode="numeric" placeholder="e.g. 30123456">
+      </div>
+      <div class="walkin-form-group">
+        <label class="walkin-label">Email (Optional - for digital card delivery)</label>
+        <input class="input-field" id="newmember-email" type="email" placeholder="e.g. john.doe@ucalgary.ca">
+      </div>
+      <div class="walkin-form-group">
+        <label class="walkin-label" id="newmember-pay-label">Payment Method ($5.00 Fee)</label>
+        <div class="pay-pill-group">
+          <div class="pay-pill selected" id="mem-pay-cash" onclick="selectMemberPay(this, 'Cash')">💵 Cash ($5)</div>
+          <div class="pay-pill" id="mem-pay-etransfer" onclick="selectMemberPay(this, 'E-Transfer')">📱 E-Transfer ($5)</div>
+        </div>
+      </div>
+      <button class="btn-submit-walkin" id="btn-submit-newmember" onclick="submitNewMember()" style="background: linear-gradient(135deg, #ec4899, #a855f7); margin-top: 6px;">
+        💳 Collect $5 & Admit Member
       </button>
     </div>
   </div>
@@ -857,6 +929,33 @@
             <div class="stat-val" id="stat-walkins">0</div>
             <div class="stat-lbl">Walk-Ins</div>
           </div>
+        </div>
+      </div>
+
+      <!-- Section: Event & Membership Pricing Settings -->
+      <div class="hub-section">
+        <div class="hub-section-title">
+          <span>Door Pricing Settings</span>
+          <button class="btn-hub-sub" onclick="savePricing()">💾 Save Prices</button>
+        </div>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+          <div>
+            <label style="font-size:11px; font-weight:700; color:#94a3b8; display:block; margin-bottom:4px;">Walk-In Price ($)</label>
+            <div style="display:flex; align-items:center; background:#0f172a; border:1px solid rgba(255,255,255,0.15); border-radius:10px; padding:0 8px;">
+              <span style="color:#94a3b8; font-weight:700;">$</span>
+              <input class="input-field" id="hub-walkin-price" type="number" min="0" step="1" value="5" style="border:none; padding:8px 6px; font-size:14px; font-weight:700;">
+            </div>
+          </div>
+          <div>
+            <label style="font-size:11px; font-weight:700; color:#94a3b8; display:block; margin-bottom:4px;">Membership Fee ($)</label>
+            <div style="display:flex; align-items:center; background:#0f172a; border:1px solid rgba(255,255,255,0.15); border-radius:10px; padding:0 8px;">
+              <span style="color:#94a3b8; font-weight:700;">$</span>
+              <input class="input-field" id="hub-membership-price" type="number" min="0" step="1" value="5" style="border:none; padding:8px 6px; font-size:14px; font-weight:700;">
+            </div>
+          </div>
+        </div>
+        <div style="font-size:11px; color:#64748b; line-height:1.3;">
+          Cash and E-Transfer will both charge this exact amount across walk-ins and memberships.
         </div>
       </div>
 
@@ -996,11 +1095,65 @@
       osc.stop(now + 0.3);
     }
 
+    // --- Dynamic Pricing Configuration ---
+    let WALKIN_PRICE = localStorage.getItem("CSS_WALKIN_PRICE") || "5";
+    let MEMBERSHIP_PRICE = localStorage.getItem("CSS_MEMBERSHIP_PRICE") || "5";
+
+    function updatePricingUI() {
+      const wCash = document.getElementById("walkin-pay-cash");
+      const wEtrans = document.getElementById("walkin-pay-etransfer");
+      if (wCash) wCash.innerText = `💵 Cash ($${WALKIN_PRICE})`;
+      if (wEtrans) wEtrans.innerText = `📱 E-Transfer ($${WALKIN_PRICE})`;
+
+      const mCash = document.getElementById("mem-pay-cash");
+      const mEtrans = document.getElementById("mem-pay-etransfer");
+      if (mCash) mCash.innerText = `💵 Cash ($${MEMBERSHIP_PRICE})`;
+      if (mEtrans) mEtrans.innerText = `📱 E-Transfer ($${MEMBERSHIP_PRICE})`;
+
+      const mTitle = document.getElementById("newmember-drawer-title");
+      if (mTitle) mTitle.innerHTML = `<span>💳</span> Quick Add Member ($${MEMBERSHIP_PRICE}.00)`;
+
+      const mLabel = document.getElementById("newmember-pay-label");
+      if (mLabel) mLabel.innerText = `Payment Method ($${MEMBERSHIP_PRICE}.00 Fee)`;
+
+      const mBtn = document.getElementById("btn-submit-newmember");
+      if (mBtn) mBtn.innerText = `💳 Collect $${MEMBERSHIP_PRICE} & Admit Member`;
+
+      const hubW = document.getElementById("hub-walkin-price");
+      const hubM = document.getElementById("hub-membership-price");
+      if (hubW) hubW.value = WALKIN_PRICE;
+      if (hubM) hubM.value = MEMBERSHIP_PRICE;
+    }
+
+    function savePricing() {
+      const wInput = document.getElementById("hub-walkin-price");
+      const mInput = document.getElementById("hub-membership-price");
+      const wVal = wInput ? wInput.value.trim() : "5";
+      const mVal = mInput ? mInput.value.trim() : "5";
+
+      WALKIN_PRICE = wVal || "5";
+      MEMBERSHIP_PRICE = mVal || "5";
+      localStorage.setItem("CSS_WALKIN_PRICE", WALKIN_PRICE);
+      localStorage.setItem("CSS_MEMBERSHIP_PRICE", MEMBERSHIP_PRICE);
+
+      updatePricingUI();
+
+      fetch(API_URL + "?action=setPricing&walkin=" + encodeURIComponent(WALKIN_PRICE) + "&membership=" + encodeURIComponent(MEMBERSHIP_PRICE))
+        .then(res => res.json())
+        .then(d => {
+          if (d.success) {
+            alert(`✔ Pricing saved! Walk-Ins: $${WALKIN_PRICE} • Membership: $${MEMBERSHIP_PRICE}`);
+          }
+        })
+        .catch(e => console.warn("Pricing sync error:", e));
+    }
+
     // --- Initial Data Load ---
     function initSystem() {
       API_URL = getApiUrl();
       const input = document.getElementById("api-url-input");
       if (input) input.value = API_URL;
+      updatePricingUI();
 
       // Query connected spreadsheets info
       fetch(API_URL + "?action=getRosters")
@@ -1029,6 +1182,15 @@
               document.getElementById("ticket-status-tag").innerText = "Not Linked";
               document.getElementById("ticket-status-tag").style.color = "#94a3b8";
             }
+            if (d.walkinPrice) {
+              WALKIN_PRICE = d.walkinPrice;
+              localStorage.setItem("CSS_WALKIN_PRICE", d.walkinPrice);
+            }
+            if (d.membershipPrice) {
+              MEMBERSHIP_PRICE = d.membershipPrice;
+              localStorage.setItem("CSS_MEMBERSHIP_PRICE", d.membershipPrice);
+            }
+            updatePricingUI();
             if (d.events) populateEventSelect(d.events, d.activeEvent);
             updateEventUI(d.activeEvent, true);
           }
@@ -1268,11 +1430,18 @@
 
       } else if (data.status === "UNPAID") {
         playWarningSound();
+        const actionHtml = `
+          <div style="display:flex; gap:8px; justify-content:center; margin-top:8px;">
+            <button class="banner-action-btn cash" onclick="event.stopPropagation(); collectDoorPayment('${data.id || ticketId}', 'Cash', this)">💵 Pay Cash $${MEMBERSHIP_PRICE}</button>
+            <button class="banner-action-btn etransfer" onclick="event.stopPropagation(); collectDoorPayment('${data.id || ticketId}', 'E-Transfer', this)">📱 Pay E-Transfer $${MEMBERSHIP_PRICE}</button>
+          </div>
+        `;
         showBanner(
           "status-unpaid",
-          "💳 PAYMENT REQUIRED",
+          `💳 $${MEMBERSHIP_PRICE}.00 PAYMENT DUE`,
           data.name || "Attendee",
-          `UCID: ${data.ucid || "N/A"} • Payment Pending`
+          `UCID: ${data.ucid || "N/A"} • Membership Fee Due`,
+          actionHtml
         );
         addHistoryRecord(data.name || "Attendee", `UCID: ${data.ucid || "N/A"} • ${data.id || ticketId}`, "Unpaid", "badge-red", timeStr);
 
@@ -1299,18 +1468,29 @@
     }
 
     let bannerTimeout = null;
-    function showBanner(className, tag, name, details) {
+    function showBanner(className, tag, name, details, actionHtml) {
       const banner = document.getElementById("result-banner");
       banner.className = className;
       document.getElementById("banner-status-tag").innerText = tag;
       document.getElementById("banner-name").innerText = name;
       document.getElementById("banner-details").innerText = details;
+
+      const actionsBox = document.getElementById("banner-actions");
+      if (actionsBox) {
+        if (actionHtml) {
+          actionsBox.innerHTML = actionHtml;
+          actionsBox.style.display = "block";
+        } else {
+          actionsBox.innerHTML = "";
+          actionsBox.style.display = "none";
+        }
+      }
       banner.style.display = "block";
 
       if (bannerTimeout) clearTimeout(bannerTimeout);
       bannerTimeout = setTimeout(() => {
         banner.style.display = "none";
-      }, 4000);
+      }, actionHtml ? 8000 : 4000);
     }
 
     function dismissBanner() {
@@ -1323,6 +1503,7 @@
     function closeAllModals() {
       document.getElementById("modal-backdrop").classList.remove("active");
       document.getElementById("walkin-drawer").classList.remove("active");
+      document.getElementById("newmember-drawer").classList.remove("active");
       document.getElementById("hub-drawer").classList.remove("active");
       document.getElementById("recent-drawer").classList.remove("active");
     }
@@ -1338,6 +1519,13 @@
       document.getElementById("modal-backdrop").classList.add("active");
       document.getElementById("walkin-drawer").classList.add("active");
       setTimeout(() => document.getElementById("walkin-name").focus(), 300);
+    }
+
+    function openNewMemberModal() {
+      closeAllModals();
+      document.getElementById("modal-backdrop").classList.add("active");
+      document.getElementById("newmember-drawer").classList.add("active");
+      setTimeout(() => document.getElementById("newmember-name").focus(), 300);
     }
 
     function openHub() {
@@ -1367,7 +1555,9 @@
       const name = nameInput.value.trim() || "Walk-In Guest";
       const ucid = ucidInput.value.trim() || "N/A";
       let pay = selectedPayment;
-      if (pay === "Custom") {
+      if (pay === "Cash") pay = `Cash ($${WALKIN_PRICE})`;
+      else if (pay === "E-Transfer") pay = `E-Transfer ($${WALKIN_PRICE})`;
+      else if (pay === "Custom") {
         pay = customInput.value.trim() || "Custom";
       }
 
@@ -1402,6 +1592,68 @@
           submitBtn.disabled = false;
           submitBtn.innerText = "➕ Record & Check In Walk-In";
           alert("Network error logging walk-in: " + err.message);
+        });
+    }
+
+    // --- Quick Add Member Management ---
+    let selectedMemberPayment = "Cash";
+    function selectMemberPay(el, method) {
+      const cashPill = document.getElementById("mem-pay-cash");
+      const etransferPill = document.getElementById("mem-pay-etransfer");
+      if (cashPill) cashPill.classList.remove("selected");
+      if (etransferPill) etransferPill.classList.remove("selected");
+      el.classList.add("selected");
+      selectedMemberPayment = method;
+    }
+
+    function submitNewMember() {
+      const nameInput = document.getElementById("newmember-name");
+      const ucidInput = document.getElementById("newmember-ucid");
+      const emailInput = document.getElementById("newmember-email");
+      const submitBtn = document.getElementById("btn-submit-newmember");
+
+      const name = nameInput.value.trim();
+      if (!name) {
+        alert("Please enter the student's name.");
+        nameInput.focus();
+        return;
+      }
+      const ucid = ucidInput.value.trim() || "N/A";
+      const email = emailInput.value.trim();
+      const pay = selectedMemberPayment;
+
+      submitBtn.disabled = true;
+      submitBtn.innerText = "⏳ Registering & Admitting...";
+
+      fetch(API_URL + "?action=quickAddMember&name=" + encodeURIComponent(name) + "&ucid=" + encodeURIComponent(ucid) + "&email=" + encodeURIComponent(email) + "&payment=" + encodeURIComponent(pay))
+        .then(res => res.json())
+        .then(d => {
+          submitBtn.disabled = false;
+          submitBtn.innerText = "💳 Collect $5 & Admit Member";
+          if (d.success) {
+            closeAllModals();
+            playSuccessSound();
+            showBanner(
+              "status-checked-in",
+              "✔ NEW MEMBER ADMITTED",
+              name,
+              `UCID: ${ucid} • Paid $5.00 (${pay})`
+            );
+            if (d.totalCheckedIn !== undefined) updateCount(d.totalCheckedIn);
+            const timeStr = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+            addHistoryRecord(name, `UCID: ${ucid} • ${d.id}`, `New Member (${pay})`, "badge-purple", timeStr);
+            nameInput.value = "";
+            ucidInput.value = "";
+            emailInput.value = "";
+            fetchStats();
+          } else {
+            alert("Error registering member: " + d.message);
+          }
+        })
+        .catch(err => {
+          submitBtn.disabled = false;
+          submitBtn.innerText = "💳 Collect $5 & Admit Member";
+          alert("Network error: " + err.message);
         });
     }
 
@@ -1499,14 +1751,23 @@
                   <div style="font-size:11px; color:#94a3b8;">${att.id} • UCID: ${att.ucid || "N/A"}</div>
                   ${emailHint}
                   <div style="font-size:10px; margin-top:2px;">
-                    ${att.paid ? '<span style="color:#34d399;">● Paid</span>' : '<span style="color:#f87171;">● Unpaid</span>'}
+                    ${att.paid ? '<span style="color:#34d399; font-weight:700;">● Paid</span>' : `<span style="color:#f87171; font-weight:700;">⚠️ UNPAID ($${MEMBERSHIP_PRICE}.00)</span>`}
                     ${att.checkedIn ? '<span style="color:#94a3b8; margin-left:6px;">(Checked In ' + att.time + ')</span>' : ''}
                   </div>
                 </div>
                 <div>
                   ${att.checkedIn 
                     ? '<button class="btn-manual-checkin done" disabled>✔ Checked In</button>'
-                    : `<button class="btn-manual-checkin" onclick="manualCheckInAttendee('${att.id}', this)">Check In</button>`
+                    : (att.paid 
+                        ? `<button class="btn-manual-checkin" onclick="manualCheckInAttendee('${att.id}', this)">Check In</button>`
+                        : `<div style="display:flex; flex-direction:column; gap:4px; align-items:flex-end;">
+                             <div style="display:flex; gap:4px;">
+                               <button class="btn-pay-action cash" onclick="collectDoorPayment('${att.id}', 'Cash', this)">💵 Cash $${MEMBERSHIP_PRICE}</button>
+                               <button class="btn-pay-action etransfer" onclick="collectDoorPayment('${att.id}', 'E-Transfer', this)">📱 E-Transfer $${MEMBERSHIP_PRICE}</button>
+                             </div>
+                             <span style="font-size:10px; color:#94a3b8; text-decoration:underline; cursor:pointer;" onclick="overrideCheckInAttendee('${att.id}', this)">Override (Free)</span>
+                           </div>`
+                      )
                   }
                 </div>
               `;
@@ -1539,6 +1800,77 @@
           btnElement.disabled = false;
           btnElement.innerText = "Check In";
           alert("Check-in error: " + e.message);
+        });
+    }
+
+    function collectDoorPayment(id, method, btnElement) {
+      if (btnElement) {
+        btnElement.disabled = true;
+        btnElement.innerText = "⏳...";
+      }
+      fetch(API_URL + "?action=collectPay&id=" + encodeURIComponent(id) + "&method=" + encodeURIComponent(method))
+        .then(res => res.json())
+        .then(data => {
+          if (data.success) {
+            playSuccessSound();
+            showBanner(
+              "status-checked-in",
+              "✔ PAID & ADMITTED",
+              data.name || "Member",
+              `UCID: ${data.ucid || "N/A"} • Paid $${MEMBERSHIP_PRICE}.00 (${method})`
+            );
+            if (data.totalCheckedIn !== undefined) updateCount(data.totalCheckedIn);
+            const timeStr = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+            addHistoryRecord(data.name || "Member", `UCID: ${data.ucid || "N/A"} • ${data.id || id}`, `Paid $${MEMBERSHIP_PRICE} (${method})`, "badge-purple", timeStr);
+
+            if (btnElement) {
+              const parent = btnElement.closest('.search-result-card');
+              if (parent) {
+                const actionCol = parent.children[1];
+                if (actionCol) actionCol.innerHTML = '<button class="btn-manual-checkin done" disabled>✔ Checked In</button>';
+                const paidTag = parent.querySelector('span[style*="f87171"]');
+                if (paidTag) paidTag.outerHTML = '<span style="color:#34d399; font-weight:700;">● Paid</span>';
+              }
+            }
+            fetchStats();
+          } else {
+            alert("Payment collection error: " + data.message);
+            if (btnElement) {
+              btnElement.disabled = false;
+              btnElement.innerText = (method === 'Cash') ? `💵 Cash $${MEMBERSHIP_PRICE}` : `📱 E-Transfer $${MEMBERSHIP_PRICE}`;
+            }
+          }
+        })
+        .catch(err => {
+          alert("Network error collecting payment: " + err.message);
+          if (btnElement) {
+            btnElement.disabled = false;
+            btnElement.innerText = (method === 'Cash') ? `💵 Cash $${MEMBERSHIP_PRICE}` : `📱 E-Transfer $${MEMBERSHIP_PRICE}`;
+          }
+        });
+    }
+
+    function overrideCheckInAttendee(id, spanElement) {
+      if (!confirm("Admit this attendee without collecting payment (Override)?")) return;
+      if (spanElement) spanElement.innerText = "⏳...";
+      fetch(API_URL + "?ticket=" + encodeURIComponent(id) + "&override=true")
+        .then(res => res.json())
+        .then(data => {
+          handleScanResult(data, id);
+          if (data.status === "CHECKED_IN") {
+            const parent = spanElement.closest('.search-result-card');
+            if (parent) {
+              const actionCol = parent.children[1];
+              if (actionCol) actionCol.innerHTML = '<button class="btn-manual-checkin done" disabled>✔ Checked In</button>';
+            }
+            fetchStats();
+          } else {
+            if (spanElement) spanElement.innerText = "Override (Free)";
+          }
+        })
+        .catch(err => {
+          alert("Error: " + err.message);
+          if (spanElement) spanElement.innerText = "Override (Free)";
         });
     }
 

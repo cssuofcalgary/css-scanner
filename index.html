@@ -159,6 +159,35 @@
       flex-shrink: 0;
     }
 
+    /* Floating Sound Toggle Button */
+    .fab-sound {
+      position: fixed;
+      bottom: 84px;
+      right: 16px;
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #1e293b, #0f172a);
+      border: 2px solid rgba(255, 255, 255, 0.25);
+      color: #ffffff;
+      font-size: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 35;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.65);
+      transition: transform 0.15s ease, background 0.2s, border-color 0.2s;
+    }
+    .fab-sound:active {
+      transform: scale(0.92);
+    }
+    .fab-sound.muted {
+      border-color: rgba(239, 68, 68, 0.6);
+      background: linear-gradient(135deg, #450a0a, #1f1111);
+      color: #fca5a5;
+    }
+
     /* Floating Hub Button for phones */
     .fab-hub {
       position: fixed;
@@ -685,10 +714,10 @@
   <!-- Top Bar -->
   <div class="top-bar">
     <div class="brand-col">
-      <div class="brand" onclick="openHub()">
+      <div class="brand" onclick="window.location.reload()" title="Tap to refresh scanner">
         <span>🐼</span> CSS Scanner
       </div>
-      <div class="event-badge" onclick="openHub()">
+      <div class="event-badge" onclick="openHub()" title="Open Manager Hub">
         <span class="dot" id="event-dot"></span>
         <span id="header-event-name">Loading...</span>
       </div>
@@ -713,6 +742,11 @@
   <!-- Audio Unlock Prompt -->
   <div id="sound-prompt" onclick="enableAudio()">
     <span>🔊</span> Tap for Sound Chimes
+  </div>
+
+  <!-- Floating Sound Toggle Button -->
+  <div class="fab-sound" id="fab-sound" onclick="toggleSound()" title="Toggle Sound Chimes">
+    🔊
   </div>
 
   <!-- Floating Hub Button -->
@@ -906,6 +940,17 @@
         </div>
       </div>
 
+      <!-- Section: Scan Audio Chime Toggle -->
+      <div class="hub-section">
+        <div class="hub-section-title">Scan Audio Chime</div>
+        <div class="entry-toggle-card">
+          <div class="entry-status-text" id="sound-status-label">🔊 Chimes Active</div>
+          <button class="btn-toggle-entry" id="btn-toggle-sound" onclick="toggleSound()">
+            Mute Chime
+          </button>
+        </div>
+      </div>
+
       <!-- Section: Live Event Breakdown Stats -->
       <div class="hub-section">
         <div class="hub-section-title">
@@ -938,19 +983,19 @@
           <span>Door Pricing Settings</span>
           <button class="btn-hub-sub" onclick="savePricing()">💾 Save Prices</button>
         </div>
-        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-          <div>
-            <label style="font-size:11px; font-weight:700; color:#94a3b8; display:block; margin-bottom:4px;">Walk-In Price ($)</label>
-            <div style="display:flex; align-items:center; background:#0f172a; border:1px solid rgba(255,255,255,0.15); border-radius:10px; padding:0 8px;">
-              <span style="color:#94a3b8; font-weight:700;">$</span>
-              <input class="input-field" id="hub-walkin-price" type="number" min="0" step="1" value="5" style="border:none; padding:8px 6px; font-size:14px; font-weight:700;">
+        <div style="display:flex; flex-direction:column; gap:8px;">
+          <div style="display:flex; justify-content:space-between; align-items:center; background:#0f172a; padding:8px 12px; border-radius:10px; border:1px solid rgba(255,255,255,0.06);">
+            <label style="font-size:12px; font-weight:600; color:#cbd5e1;">Walk-In Price</label>
+            <div style="display:flex; align-items:center; background:#1e293b; border:1px solid rgba(255,255,255,0.15); border-radius:8px; padding:0 8px; width:90px;">
+              <span style="color:#94a3b8; font-weight:700; font-size:13px;">$</span>
+              <input class="input-field" id="hub-walkin-price" type="number" min="0" step="1" value="5" style="border:none; padding:6px 6px; font-size:14px; font-weight:700; width:100%; text-align:right; background:transparent;">
             </div>
           </div>
-          <div>
-            <label style="font-size:11px; font-weight:700; color:#94a3b8; display:block; margin-bottom:4px;">Membership Fee ($)</label>
-            <div style="display:flex; align-items:center; background:#0f172a; border:1px solid rgba(255,255,255,0.15); border-radius:10px; padding:0 8px;">
-              <span style="color:#94a3b8; font-weight:700;">$</span>
-              <input class="input-field" id="hub-membership-price" type="number" min="0" step="1" value="5" style="border:none; padding:8px 6px; font-size:14px; font-weight:700;">
+          <div style="display:flex; justify-content:space-between; align-items:center; background:#0f172a; padding:8px 12px; border-radius:10px; border:1px solid rgba(255,255,255,0.06);">
+            <label style="font-size:12px; font-weight:600; color:#cbd5e1;">Membership Fee</label>
+            <div style="display:flex; align-items:center; background:#1e293b; border:1px solid rgba(255,255,255,0.15); border-radius:8px; padding:0 8px; width:90px;">
+              <span style="color:#94a3b8; font-weight:700; font-size:13px;">$</span>
+              <input class="input-field" id="hub-membership-price" type="number" min="0" step="1" value="5" style="border:none; padding:6px 6px; font-size:14px; font-weight:700; width:100%; text-align:right; background:transparent;">
             </div>
           </div>
         </div>
@@ -1020,6 +1065,7 @@
     let lastScannedText = "";
     let audioCtx = null;
     let audioEnabled = false;
+    let isSoundMuted = localStorage.getItem("CSS_SOUND_MUTED") === "true";
     let scanHistory = [];
     let selectedPayment = "Cash ($5)";
     let searchTimeout = null;
@@ -1047,8 +1093,52 @@
     let API_URL = getApiUrl();
 
     document.addEventListener("click", () => {
-      if (!audioEnabled) enableAudio();
+      if (!audioEnabled && !isSoundMuted) enableAudio();
     }, { once: true });
+
+    function updateSoundUI() {
+      const fab = document.getElementById("fab-sound");
+      const label = document.getElementById("sound-status-label");
+      const btn = document.getElementById("btn-toggle-sound");
+      const prompt = document.getElementById("sound-prompt");
+
+      if (isSoundMuted) {
+        if (fab) {
+          fab.innerHTML = "🔇";
+          fab.classList.add("muted");
+          fab.title = "Unmute Audio Chimes";
+        }
+        if (label) label.innerHTML = "🔇 Chimes Muted";
+        if (btn) {
+          btn.innerText = "Unmute Chime";
+          btn.classList.add("paused");
+        }
+        if (prompt) prompt.style.display = "none";
+      } else {
+        if (fab) {
+          fab.innerHTML = "🔊";
+          fab.classList.remove("muted");
+          fab.title = "Mute Audio Chimes";
+        }
+        if (label) label.innerHTML = "🔊 Chimes Active";
+        if (btn) {
+          btn.innerText = "Mute Chime";
+          btn.classList.remove("paused");
+        }
+        if (prompt && !audioEnabled) prompt.style.display = "flex";
+      }
+    }
+
+    function toggleSound() {
+      isSoundMuted = !isSoundMuted;
+      localStorage.setItem("CSS_SOUND_MUTED", isSoundMuted ? "true" : "false");
+      if (!isSoundMuted) {
+        if (!audioCtx || audioCtx.state === 'suspended' || !audioEnabled) {
+          enableAudio();
+        }
+      }
+      updateSoundUI();
+    }
 
     function enableAudio() {
       if (!audioCtx) {
@@ -1060,11 +1150,13 @@
       audioEnabled = true;
       const prompt = document.getElementById('sound-prompt');
       if (prompt) prompt.style.display = 'none';
-      playSuccessSound();
+      if (!isSoundMuted) {
+        playSuccessSound();
+      }
     }
 
     function playSuccessSound() {
-      if (!audioEnabled || !audioCtx) return;
+      if (isSoundMuted || !audioEnabled || !audioCtx) return;
       const now = audioCtx.currentTime;
       const osc = audioCtx.createOscillator();
       const gain = audioCtx.createGain();
@@ -1080,7 +1172,7 @@
     }
 
     function playWarningSound() {
-      if (!audioEnabled || !audioCtx) return;
+      if (isSoundMuted || !audioEnabled || !audioCtx) return;
       const now = audioCtx.currentTime;
       const osc = audioCtx.createOscillator();
       const gain = audioCtx.createGain();
@@ -1154,6 +1246,7 @@
       const input = document.getElementById("api-url-input");
       if (input) input.value = API_URL;
       updatePricingUI();
+      updateSoundUI();
 
       // Query connected spreadsheets info
       fetch(API_URL + "?action=getRosters")

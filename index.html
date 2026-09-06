@@ -745,19 +745,26 @@
 
       <!-- Gatekeeper Screen -->
   <div id="gatekeeper-screen" style="position: fixed; inset: 0; background: #000000; z-index: 999999; display: flex; align-items: center; justify-content: center; padding: 20px;">
-    <!-- Step 1: Stealth Passcode (Zero Text) -->
-    <div id="gate-pass-stage" style="width: 100%; max-width: 220px; text-align: center;">
+    <!-- Step 1: Passcode Stage -->
+    <div id="gate-pass-stage" style="width: 100%; max-width: 260px; text-align: center;">
+      <div style="font-size: 18px; font-weight: 800; color: #ffffff; margin-bottom: 4px;">🐼 CSS Scanner</div>
+      <div style="font-size: 12px; color: #94a3b8; margin-bottom: 16px;">Enter club passcode to unlock</div>
       <input id="gate-pass-input" type="password" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
-        style="width: 100%; box-sizing: border-box; text-align: center; font-size: 20px; font-weight: 700; letter-spacing: 4px; padding: 12px 16px; background: #0a0a0a; border: 1px solid rgba(255,255,255,0.12); border-radius: 12px; color: #ffffff; outline: none; transition: border-color 0.2s;"
-        onkeydown="if(event.key==='Enter') submitGatePass()"
-        oninput="if(this.value.trim().toUpperCase()==='CSS'||this.value.trim()==='2006') submitGatePass()">
+        placeholder="Passcode"
+        style="width: 100%; box-sizing: border-box; text-align: center; font-size: 18px; font-weight: 700; letter-spacing: 2px; padding: 12px 16px; background: #0f172a; border: 1px solid rgba(255,255,255,0.18); border-radius: 12px; color: #ffffff; outline: none; transition: border-color 0.2s;"
+        onkeydown="if(event.key==='Enter') submitGatePass()">
+      <button id="btn-gate-unlock" onclick="submitGatePass()"
+        style="width: 100%; padding: 12px; background: #6366f1; border: none; border-radius: 12px; color: white; font-weight: 700; font-size: 14px; cursor: pointer; margin-top: 12px; transition: background 0.2s;">
+        Unlock Scanner
+      </button>
     </div>
 
     <!-- Step 2: Clean Name Input -->
     <div id="gate-volunteer-stage" style="display: none; width: 100%; max-width: 240px; text-align: center;">
-      <div style="font-size: 15px; font-weight: 600; color: #ffffff; margin-bottom: 12px;">Enter name</div>
+      <div style="font-size: 15px; font-weight: 600; color: #ffffff; margin-bottom: 12px;">Enter your name</div>
       <input id="gate-volunteer-input" type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
-        style="width: 100%; box-sizing: border-box; text-align: center; font-size: 16px; font-weight: 600; padding: 12px 14px; background: #0a0a0a; border: 1px solid rgba(255,255,255,0.25); border-radius: 12px; color: #ffffff; outline: none; margin-bottom: 12px;"
+        placeholder="Volunteer name"
+        style="width: 100%; box-sizing: border-box; text-align: center; font-size: 16px; font-weight: 600; padding: 12px 14px; background: #0f172a; border: 1px solid rgba(255,255,255,0.25); border-radius: 12px; color: #ffffff; outline: none; margin-bottom: 12px;"
         onkeydown="if(event.key==='Enter') submitVolunteerName()">
       <button onclick="submitVolunteerName()"
         style="width: 100%; padding: 12px; background: #10b981; border: none; border-radius: 12px; color: white; font-weight: 700; font-size: 14px; cursor: pointer;">
@@ -818,7 +825,7 @@
     let API_URL = getApiUrl();
 
     function getDoorKey() {
-      return encodeURIComponent(localStorage.getItem("CSS_DOOR_KEY") || "CSS");
+      return encodeURIComponent(localStorage.getItem("CSS_DOOR_KEY") || "");
     }
 
     function getVolunteerName() {
@@ -1984,41 +1991,82 @@
       }
     }
 
-    function submitGatePass() {
+    async function submitGatePass() {
       const input = document.getElementById("gate-pass-input");
-      const val = (input ? input.value : "").trim().toUpperCase();
+      const btn = document.getElementById("btn-gate-unlock");
+      const rawVal = (input ? input.value : "").trim();
+      if (!rawVal) return;
 
-      if (val === "CSS" || val === "2006") {
+      if (btn) {
+        btn.innerText = "Verifying...";
+        btn.style.background = "#6366f1";
+      }
+
+      let isAllowed = false;
+      let isExec = false;
+
+      try {
+        const res = await fetch("https://script.google.com/macros/s/AKfycbzWhQZso81T_CH3j5V5srpFnA6nADnW7oe5SOKef0JcBED3ivoD0h0KVjErfvKok8RH/exec?action=verifyPayPass&pass=" + encodeURIComponent(rawVal));
+        const data = await res.json();
+        if (data && data.success) {
+          isAllowed = true;
+          if (data.tier === 2) isExec = true;
+        }
+      } catch (e) {
+        console.warn("Passcode verification check:", e);
+      }
+
+      if (isAllowed) {
         localStorage.setItem("CSS_APP_UNLOCKED", "true");
-        localStorage.setItem("CSS_DOOR_KEY", val);
-        if (val === "2006") {
-          currentExecPin = "2006";
-          sessionStorage.setItem("CSS_EXEC_PIN", "2006");
+        localStorage.setItem("CSS_DOOR_KEY", rawVal);
+        if (isExec) {
+          currentExecPin = rawVal;
+          sessionStorage.setItem("CSS_EXEC_PIN", rawVal);
         }
-        
-        const storedName = localStorage.getItem("CSS_VOLUNTEER_NAME");
-        if (!storedName) {
-          const passStage = document.getElementById("gate-pass-stage");
-          const volStage = document.getElementById("gate-volunteer-stage");
-          if (passStage && volStage) {
-            passStage.style.display = "none";
-            volStage.style.display = "block";
-            setTimeout(() => {
-              const vInput = document.getElementById("gate-volunteer-input");
-              if (vInput) vInput.focus();
-            }, 200);
-            return;
+
+        if (btn) {
+          btn.innerText = "✔ Unlocked!";
+          btn.style.background = "#10b981";
+        }
+        if (input) {
+          input.style.borderColor = "#10b981";
+        }
+
+        setTimeout(() => {
+          const storedName = localStorage.getItem("CSS_VOLUNTEER_NAME");
+          if (!storedName) {
+            const passStage = document.getElementById("gate-pass-stage");
+            const volStage = document.getElementById("gate-volunteer-stage");
+            if (passStage && volStage) {
+              passStage.style.display = "none";
+              volStage.style.display = "block";
+              setTimeout(() => {
+                const vInput = document.getElementById("gate-volunteer-input");
+                if (vInput) vInput.focus();
+              }, 200);
+              return;
+            }
           }
-        }
-        completeUnlock();
+          completeUnlock();
+        }, 220);
       } else {
+        if (btn) {
+          btn.innerText = "✕ Invalid Passcode";
+          btn.style.background = "#ef4444";
+          setTimeout(() => {
+            if (btn) {
+              btn.innerText = "Unlock Scanner";
+              btn.style.background = "#6366f1";
+            }
+          }, 1000);
+        }
         if (input) {
           input.style.borderColor = "#ef4444";
           input.value = "";
           input.focus();
           setTimeout(() => {
-            if (input) input.style.borderColor = "rgba(255,255,255,0.12)";
-          }, 600);
+            if (input) input.style.borderColor = "rgba(255,255,255,0.18)";
+          }, 800);
         }
       }
     }

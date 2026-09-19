@@ -1233,6 +1233,13 @@
         ticketId = ticketId.split("id=")[1].split("&")[0];
       } else if (ticketId.includes("code=")) {
         ticketId = ticketId.split("code=")[1].split("&")[0];
+      } else if (ticketId.includes("/") && (ticketId.includes("http://") || ticketId.includes("https://") || ticketId.includes("ucalgarycss.ca") || ticketId.includes("github.io"))) {
+        const cleanPath = ticketId.split("?")[0].split("#")[0].replace(/\/+$/, "");
+        const segments = cleanPath.split("/");
+        const last = segments[segments.length - 1];
+        if (last && !last.includes(".") && !last.toLowerCase().includes("scanner") && !last.toLowerCase().includes("portal")) {
+          ticketId = last;
+        }
       }
       ticketId = ticketId.split("#")[0].split("?")[0].trim().toUpperCase();
 

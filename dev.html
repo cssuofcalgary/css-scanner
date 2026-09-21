@@ -509,6 +509,8 @@
       display: flex;
       flex-direction: column;
       gap: 5px;
+      min-width: 0;
+      overflow: hidden;
     }
 
     .form-label {
@@ -520,10 +522,14 @@
     }
 
     .input-parchment {
+      width: 100%;
+      box-sizing: border-box;
+      min-width: 0;
+      max-width: 100%;
       background: var(--paper-deep);
       border: 2px dashed var(--gold);
       border-radius: 6px;
-      padding: 13px 14px;
+      padding: 12px 14px;
       color: var(--ink);
       font-family: 'Source Serif 4', Georgia, serif;
       font-size: 16px;
@@ -535,6 +541,89 @@
       background: #fbf7ea;
       border-color: var(--ink);
       box-shadow: 0 0 0 3px rgba(42, 37, 32, 0.12);
+    }
+
+    input[type=number]::-webkit-inner-spin-button, 
+    input[type=number]::-webkit-outer-spin-button { 
+      -webkit-appearance: none; 
+      margin: 0; 
+    }
+    input[type=number] {
+      -moz-appearance: textfield;
+      appearance: textfield;
+    }
+
+    /* Executive PIN Tag Keypad (No Keyboard) */
+    .pin-display-tags {
+      display: flex;
+      justify-content: center;
+      gap: 14px;
+      margin: 10px 0 20px;
+    }
+    .pin-dot {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      border: 2px dashed var(--gold);
+      background: var(--paper-deep);
+      transition: all 0.15s ease;
+    }
+    .pin-dot.filled {
+      background: var(--primary);
+      border-color: var(--primary-deep);
+      transform: scale(1.15);
+      box-shadow: 0 0 8px rgba(76, 107, 71, 0.4);
+    }
+    .pin-dot.error {
+      background: var(--error);
+      border-color: var(--error);
+      animation: shake 0.3s ease;
+    }
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      20%, 60% { transform: translateX(-4px); }
+      40%, 80% { transform: translateX(4px); }
+    }
+
+    .pin-pad-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      max-width: 260px;
+      margin: 0 auto 10px;
+      width: 100%;
+    }
+    .btn-pin-key {
+      background: var(--paper-deep);
+      border: 1px dashed var(--gold);
+      color: var(--ink);
+      height: 52px;
+      border-radius: 6px;
+      font-family: 'Silkscreen', monospace;
+      font-size: 19px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      user-select: none;
+      -webkit-user-select: none;
+      touch-action: manipulation;
+      transition: all 0.1s ease;
+    }
+    .btn-pin-key:active {
+      transform: scale(0.92);
+      background: var(--ink);
+      color: var(--paper);
+    }
+    .btn-pin-key.fn {
+      font-size: 14px;
+      background: rgba(168, 130, 46, 0.1);
+      color: var(--ink-soft);
+    }
+    .btn-pin-key.fn:active {
+      background: var(--error);
+      color: var(--paper);
     }
 
     .pay-grid {
@@ -957,14 +1046,15 @@
       <button class="btn-close-drawer" onclick="closeAllModals()">✕</button>
     </div>
     <div class="drawer-body">
-      <div class="form-group">
-        <input class="input-parchment" id="quick-search-input" type="text" placeholder="Type attendee name, UCID, or email..." oninput="onQuickSearchInput()">
+      <div style="position: relative; width: 100%; box-sizing: border-box; margin-bottom: 12px;">
+        <input class="input-parchment" id="quick-search-input" type="text" placeholder="Type attendee name or UCID..." oninput="onQuickSearchInput()" style="padding-right: 36px;">
+        <button id="quick-search-clear" onclick="clearQuickSearch()" style="display:none; position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; font-size: 16px; color: var(--ink-soft); cursor: pointer; padding: 4px;">✕</button>
       </div>
 
       <!-- Results List -->
       <div id="quick-search-results" style="display: flex; flex-direction: column; gap: 8px; max-height: 440px; overflow-y: auto;">
         <div style="text-align: center; color: var(--ink-soft); font-style: italic; padding: 24px 10px;">
-          Type an attendee name to search instantly.
+          Type attendee name or UCID to search instantly.
         </div>
       </div>
     </div>
@@ -1040,18 +1130,41 @@
     </div>
   </div>
 
-  <!-- DRAWER 3: PIN UNLOCK FOR DESK STATION -->
-  <div class="drawer" id="pin-drawer" style="max-width: 360px;">
+  <!-- DRAWER 3: EXECUTIVE PIN KEYPAD (PIN TAG) -->
+  <div class="drawer" id="pin-drawer" style="max-width: 380px;">
     <div class="drawer-handle" onclick="closeAllModals()"></div>
     <div class="drawer-header">
       <div class="drawer-title">Executive PIN Required</div>
       <button class="btn-close-drawer" onclick="closeAllModals()">✕</button>
     </div>
-    <div class="drawer-body" style="text-align: center;">
-      <p style="font-size: 13px; color: var(--ink-soft); font-style: italic;">Enter Executive PIN to open Desk Station & Settings.</p>
-      <input id="exec-pin-input" type="password" placeholder="PIN" class="input-parchment" style="text-align:center; font-family:'Silkscreen', monospace; font-size:20px; letter-spacing:2px;" onkeydown="if(event.key==='Enter') submitExecPin()">
-      <div id="pin-error-msg" style="display:none; color:var(--error); font-size:12px; font-weight:700;">Incorrect PIN</div>
-      <button class="btn-submit-drawer" id="btn-submit-pin" onclick="submitExecPin()">Authorize</button>
+    <div class="drawer-body" style="text-align: center; padding-bottom: 24px;">
+      <p style="font-size: 13px; color: var(--ink-soft); font-style: italic; margin-bottom: 4px;">Tap 4-digit PIN to access station settings.</p>
+      
+      <!-- Visual Pin Dots (Filled as you tap) -->
+      <div class="pin-display-tags" id="pin-dots">
+        <span class="pin-dot" id="pdot-0"></span>
+        <span class="pin-dot" id="pdot-1"></span>
+        <span class="pin-dot" id="pdot-2"></span>
+        <span class="pin-dot" id="pdot-3"></span>
+      </div>
+
+      <div id="pin-error-msg" style="display:none; color:var(--error); font-size:12px; font-weight:700; margin-bottom: 10px;">Incorrect PIN</div>
+
+      <!-- On-Screen Pin Pad (No phone keyboard) -->
+      <div class="pin-pad-grid">
+        <button class="btn-pin-key" type="button" onclick="pressPinKey('1')">1</button>
+        <button class="btn-pin-key" type="button" onclick="pressPinKey('2')">2</button>
+        <button class="btn-pin-key" type="button" onclick="pressPinKey('3')">3</button>
+        <button class="btn-pin-key" type="button" onclick="pressPinKey('4')">4</button>
+        <button class="btn-pin-key" type="button" onclick="pressPinKey('5')">5</button>
+        <button class="btn-pin-key" type="button" onclick="pressPinKey('6')">6</button>
+        <button class="btn-pin-key" type="button" onclick="pressPinKey('7')">7</button>
+        <button class="btn-pin-key" type="button" onclick="pressPinKey('8')">8</button>
+        <button class="btn-pin-key" type="button" onclick="pressPinKey('9')">9</button>
+        <button class="btn-pin-key fn" type="button" onclick="clearPinKey()">✕</button>
+        <button class="btn-pin-key" type="button" onclick="pressPinKey('0')">0</button>
+        <button class="btn-pin-key fn" type="button" onclick="backspacePinKey()">⌫</button>
+      </div>
     </div>
   </div>
 
@@ -1088,6 +1201,9 @@
         <div class="hub-box-title">
           <span>💰 Cashbox Till Reconciler</span>
           <button id="btn-refresh-till" class="btn-action-sm" style="font-size:9px; padding:4px 8px;" onclick="fetchStats(true)">↻ Refresh Till</button>
+        </div>
+        <div style="font-size: 10px; color: var(--ink-soft); font-style: italic; margin-top: -6px; margin-bottom: 2px;">
+          Tallies today's door cash & e-transfers from Event Log sheet + local receipts.
         </div>
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
           <div class="stat-cell" style="background: rgba(76, 107, 71, 0.12); border-color: var(--primary);">
@@ -1138,17 +1254,17 @@
       <!-- Pricing Setup -->
       <div class="hub-box">
         <div class="hub-box-title">Door Pricing Settings</div>
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-          <div class="form-group">
+        <div style="display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 8px; width: 100%; box-sizing: border-box;">
+          <div class="form-group" style="min-width: 0; width: 100%; box-sizing: border-box; overflow: hidden;">
             <label class="form-label">Walk-In ($)</label>
-            <input class="input-parchment" id="hub-walkin-price" type="number" value="5" style="padding: 10px;">
+            <input class="input-parchment" id="hub-walkin-price" type="number" min="0" step="1" value="5" style="padding: 10px 8px; width: 100%; box-sizing: border-box; min-width: 0;">
           </div>
-          <div class="form-group">
+          <div class="form-group" style="min-width: 0; width: 100%; box-sizing: border-box; overflow: hidden;">
             <label class="form-label">Membership ($)</label>
-            <input class="input-parchment" id="hub-membership-price" type="number" value="5" style="padding: 10px;">
+            <input class="input-parchment" id="hub-membership-price" type="number" min="0" step="1" value="5" style="padding: 10px 8px; width: 100%; box-sizing: border-box; min-width: 0;">
           </div>
         </div>
-        <button class="btn-action-sm" onclick="savePricing()" style="padding: 10px;">Save Pricing</button>
+        <button class="btn-action-sm" onclick="savePricing()" style="padding: 10px; width: 100%;">Save Pricing</button>
       </div>
 
       <!-- Connected Google Sheets & Backend Setup -->
@@ -1250,6 +1366,7 @@
     let searchTimeout = null;
     let rosterCache = [];
     let isRosterLoading = false;
+    let isEventEntryPaused = (localStorage.getItem("CSS_CACHED_ENTRY_ACTIVE") === "false");
 
     // Local Session Till Tracker
     let localTill = JSON.parse(localStorage.getItem("CSS_LOCAL_TILL") || '{"cashTotal":0,"cashCount":0,"etransferTotal":0,"etransferCount":0,"byStaff":{}}');
@@ -1536,7 +1653,8 @@
 
       // Instant Optimistic UI Restore from localStorage (0ms loading!)
       const cachedEvent = localStorage.getItem("CSS_CACHED_EVENT_NAME");
-      if (cachedEvent) updateEventUI(cachedEvent, true);
+      const cachedEntryActive = localStorage.getItem("CSS_CACHED_ENTRY_ACTIVE") !== "false";
+      if (cachedEvent) updateEventUI(cachedEvent, cachedEntryActive);
       const cachedCount = localStorage.getItem("CSS_CACHED_COUNT");
       if (cachedCount) updateCount(cachedCount);
       const cachedSheet = localStorage.getItem("CSS_CACHED_EVENT_SHEET");
@@ -1555,14 +1673,17 @@
         if (el) el.innerText = cachedTicketSheet;
       }
 
+      // Preload roster cache from localStorage for instant 0ms search
+      initRosterCache();
+
       // Query connected sheets asynchronously in background without blocking
       setTimeout(fetchRosters, 60);
 
       // Query counts and till stats asynchronously
       setTimeout(() => fetchStats(false), 120);
 
-      // Preload roster in background after 1.5s delay so camera has total priority
-      setTimeout(preloadRoster, 1500);
+      // Preload live roster from server in background
+      setTimeout(preloadRoster, 350);
     }
 
     function fetchRosters() {
@@ -1624,6 +1745,11 @@
       const label = document.getElementById("entry-status-label");
       const btn = document.getElementById("btn-toggle-entry");
 
+      isEventEntryPaused = (entryActive === false);
+      try {
+        localStorage.setItem("CSS_CACHED_ENTRY_ACTIVE", entryActive === false ? "false" : "true");
+      } catch (e) {}
+
       if (entryActive === false) {
         if (dot) dot.className = "dot paused";
         if (label) { label.innerText = "🔴 Entry Paused"; label.style.color = "var(--error)"; }
@@ -1648,15 +1774,46 @@
       });
     }
 
-    // --- Fast Pre-Loading of Roster for Instant Search ---
+    // --- Fast Pre-Loading of Roster for Instant Search (Matching pay.html) ---
+    function initRosterCache() {
+      try {
+        const saved = localStorage.getItem("CSS_ROSTER_CACHE");
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed) && parsed.length > 0) {
+            rosterCache = parsed;
+          }
+        }
+      } catch (e) {}
+    }
+
+    function mergeIntoRosterCache(items) {
+      if (!Array.isArray(items) || items.length === 0) return;
+      const seenIds = new Set(rosterCache.map(r => r.id || r.ucid || r.name));
+      let added = false;
+      items.forEach(it => {
+        const key = it.id || it.ucid || it.name;
+        if (key && !seenIds.has(key)) {
+          seenIds.add(key);
+          rosterCache.push(it);
+          added = true;
+        }
+      });
+      if (added) {
+        try {
+          localStorage.setItem("CSS_ROSTER_CACHE", JSON.stringify(rosterCache.slice(0, 500)));
+        } catch (e) {}
+      }
+    }
+
     function preloadRoster() {
       if (isRosterLoading) return;
       isRosterLoading = true;
-      fetch(API_URL + "?action=search&q=&doorKey=" + getDoorKey())
+      fetch(API_URL + "?action=search&unpaid=true&doorKey=" + getDoorKey())
         .then(res => res.json())
         .then(d => {
           if (d && d.results && d.results.length > 0) {
-            rosterCache = d.results;
+            mergeIntoRosterCache(d.results);
           }
           isRosterLoading = false;
         })
@@ -1712,6 +1869,12 @@
     }
 
     function sendCheckInRequest(ticketId, retryCount = 0) {
+      if (isEventEntryPaused) {
+        isProcessing = false;
+        playErrorSound();
+        showBanner("stamp-invalid", "[ ENTRY PAUSED ]", "Admission Suspended", "Executives have temporarily paused admission. Check with the executive station.");
+        return;
+      }
       showVerifyingBanner(ticketId);
 
       fetch(API_URL + "?ticket=" + encodeURIComponent(ticketId) + "&doorKey=" + getDoorKey() + "&scannedBy=" + encodeURIComponent(getScannerName()))
@@ -1859,53 +2022,99 @@
       setTimeout(() => document.getElementById("newmember-name").focus(), 250);
     }
 
+    let currentPinBuffer = "";
+    let isVerifyingPin = false;
+
     function openHub() {
       if (currentExecPin) {
         revealHubDrawer();
       } else {
         closeAllModals();
+        currentPinBuffer = "";
+        isVerifyingPin = false;
+        updatePinDots(false);
+        const errMsg = document.getElementById("pin-error-msg");
+        if (errMsg) errMsg.style.display = "none";
         document.getElementById("modal-backdrop").classList.add("active");
         document.getElementById("pin-drawer").classList.add("active");
-        const pinInput = document.getElementById("exec-pin-input");
-        pinInput.value = "";
-        document.getElementById("pin-error-msg").style.display = "none";
-        setTimeout(() => pinInput.focus(), 250);
       }
     }
 
-    function submitExecPin() {
-      const pinInput = document.getElementById("exec-pin-input");
-      const pin = pinInput.value.trim();
-      const errMsg = document.getElementById("pin-error-msg");
-      const btn = document.getElementById("btn-submit-pin");
-      if (!pin) return;
+    function pressPinKey(digit) {
+      if (isVerifyingPin || currentPinBuffer.length >= 6) return;
+      currentPinBuffer += digit;
+      updatePinDots(false);
+      if (currentPinBuffer.length >= 4) {
+        // Auto-verify when 4 digits are reached
+        submitExecPin(currentPinBuffer);
+      }
+    }
 
-      btn.disabled = true;
-      btn.innerText = "Verifying...";
-      errMsg.style.display = "none";
+    function backspacePinKey() {
+      if (isVerifyingPin || currentPinBuffer.length === 0) return;
+      currentPinBuffer = currentPinBuffer.slice(0, -1);
+      updatePinDots(false);
+    }
+
+    function clearPinKey() {
+      if (isVerifyingPin) return;
+      currentPinBuffer = "";
+      updatePinDots(false);
+    }
+
+    function updatePinDots(hasError = false) {
+      for (let i = 0; i < 4; i++) {
+        const dot = document.getElementById(`pdot-${i}`);
+        if (!dot) continue;
+        dot.className = "pin-dot";
+        if (hasError) {
+          dot.classList.add("error");
+        } else if (i < currentPinBuffer.length) {
+          dot.classList.add("filled");
+        }
+      }
+    }
+
+    function submitExecPin(pinValue) {
+      const pin = (pinValue !== undefined ? pinValue : currentPinBuffer).trim();
+      const errMsg = document.getElementById("pin-error-msg");
+      if (!pin || isVerifyingPin) return;
+
+      isVerifyingPin = true;
+      if (errMsg) errMsg.style.display = "none";
 
       fetch(API_URL + "?action=verifyPin&pin=" + encodeURIComponent(pin))
         .then(res => res.json())
         .then(d => {
-          btn.disabled = false;
-          btn.innerText = "Authorize";
+          isVerifyingPin = false;
           if (d.success) {
             currentExecPin = pin;
             sessionStorage.setItem("CSS_EXEC_PIN", pin);
             closeAllModals();
             revealHubDrawer();
           } else {
-            errMsg.style.display = "block";
-            errMsg.innerText = d.message || "Incorrect Executive PIN.";
-            pinInput.value = "";
-            pinInput.focus();
+            updatePinDots(true);
+            if (errMsg) {
+              errMsg.style.display = "block";
+              errMsg.innerText = d.message || "Incorrect Executive PIN.";
+            }
+            setTimeout(() => {
+              currentPinBuffer = "";
+              updatePinDots(false);
+            }, 650);
           }
         })
         .catch(err => {
-          btn.disabled = false;
-          btn.innerText = "Authorize";
-          errMsg.style.display = "block";
-          errMsg.innerText = "Network Error: " + err.message;
+          isVerifyingPin = false;
+          updatePinDots(true);
+          if (errMsg) {
+            errMsg.style.display = "block";
+            errMsg.innerText = "Network Error: " + err.message;
+          }
+          setTimeout(() => {
+            currentPinBuffer = "";
+            updatePinDots(false);
+          }, 650);
         });
     }
 
@@ -2076,15 +2285,41 @@
     }
 
     function toggleEntryState() {
+      if (!currentExecPin) {
+        openHub();
+        return;
+      }
       const btn = document.getElementById("btn-toggle-entry");
       const targetActive = btn.innerText.includes("Resume");
+      btn.disabled = true;
+      btn.innerText = targetActive ? "Resuming..." : "Pausing...";
+
       fetch(API_URL + "?action=toggleEntry&active=" + targetActive + "&pin=" + encodeURIComponent(currentExecPin))
         .then(res => res.json())
         .then(d => {
+          btn.disabled = false;
           if (d.success) {
             const activeEvent = document.getElementById("header-event-name").innerText;
             updateEventUI(activeEvent, d.entryActive);
+            showBanner(d.entryActive ? "stamp-admitted" : "stamp-unpaid", 
+                       d.entryActive ? "[ ENTRY RESUMED ]" : "[ ENTRY PAUSED ]", 
+                       d.entryActive ? "Entry Open to Attendees" : "Entry Temporarily Paused", 
+                       `Updated by Executive for ${activeEvent}`);
+          } else if (d.error === "UNAUTHORIZED") {
+            lockHub();
+            openHub();
+            alert(d.message || "Executive PIN required to change entry status.");
+          } else {
+            alert("Error toggling entry: " + (d.message || "Server error"));
+            const activeEvent = document.getElementById("header-event-name").innerText;
+            updateEventUI(activeEvent, !targetActive);
           }
+        })
+        .catch(err => {
+          btn.disabled = false;
+          const activeEvent = document.getElementById("header-event-name").innerText;
+          updateEventUI(activeEvent, !targetActive);
+          alert("Network error: " + err.message);
         });
     }
 
@@ -2095,7 +2330,7 @@
         refreshBtn.disabled = true;
       }
 
-      fetch(API_URL + "?action=stats")
+      fetch(API_URL + "?action=stats&doorKey=" + getDoorKey())
         .then(res => res.json())
         .then(d => {
           if (refreshBtn) {
@@ -2109,6 +2344,12 @@
             document.getElementById("stat-walkins").innerText = d.walkins || 0;
             updateCount(d.total || 0);
             localStorage.setItem("CSS_CACHED_COUNT", d.total || 0);
+
+            // SYNC ENTRY STATE ACROSS ALL CONNECTED DEVICES
+            if (d.entryActive !== undefined) {
+              const activeName = d.activeEvent || document.getElementById("header-event-name").innerText;
+              updateEventUI(activeName, d.entryActive);
+            }
 
             // Use server till if returned; otherwise use real-time localTill
             if (d.till) {
@@ -2127,6 +2368,13 @@
           renderTillUI(localTill);
         });
     }
+
+    // Heartbeat: Background sync stats, entry status, and till every 10 seconds across all devices
+    setInterval(() => {
+      if (!isProcessing) {
+        fetchStats(false);
+      }
+    }, 10000);
 
     // --- Google Sheet & Roster Connections ---
     function cleanSheetId(input) {
@@ -2257,35 +2505,56 @@
       initSystem();
     }
 
-    // --- INSTANT IN-MEMORY SEARCH (PRIORITIZES NAME FIRST) ---
+    // --- INSTANT IN-MEMORY SEARCH (CLEAN & ACCURATE LIKE pay.html) ---
+    function clearQuickSearch() {
+      const input = document.getElementById("quick-search-input");
+      if (input) {
+        input.value = "";
+        const clearBtn = document.getElementById("quick-search-clear");
+        if (clearBtn) clearBtn.style.display = "none";
+        onQuickSearchInput();
+        input.focus();
+      }
+    }
+
     function onQuickSearchInput() {
-      const q = (document.getElementById("quick-search-input").value || "").trim().toLowerCase();
+      const input = document.getElementById("quick-search-input");
+      const clearBtn = document.getElementById("quick-search-clear");
+      const q = (input ? input.value : "").trim().toLowerCase();
+      if (clearBtn) clearBtn.style.display = q ? "block" : "none";
       const resultsBox = document.getElementById("quick-search-results");
 
       if (!q) {
-        resultsBox.innerHTML = '<div style="text-align: center; color: var(--ink-soft); font-style: italic; padding: 24px 10px;">Type attendee name to search instantly.</div>';
+        resultsBox.innerHTML = '<div style="text-align: center; color: var(--ink-soft); font-style: italic; padding: 24px 10px;">Type attendee name or UCID to search instantly.</div>';
         return;
       }
 
-      // 1. Instant In-Memory Filter (0ms latency, exactly like pay.html)
+      const isDigits = /^\d+$/.test(q);
+
+      // 1. Instant In-Memory Filter (0ms latency, matching pay.html)
       let matches = [];
       if (rosterCache.length > 0) {
-        // Priority 1: Match Name directly
-        const nameMatches = rosterCache.filter(att => (att.name || "").toLowerCase().includes(q));
-        // Priority 2: Match UCID
-        const ucidMatches = rosterCache.filter(att => !(att.name || "").toLowerCase().includes(q) && (att.ucid || "").toLowerCase().includes(q));
-        // Priority 3: Match Email
-        const emailMatches = rosterCache.filter(att => !(att.name || "").toLowerCase().includes(q) && !(att.ucid || "").toLowerCase().includes(q) && (att.email || "").toLowerCase().includes(q));
-
-        nameMatches.forEach(m => matches.push({ ...m, matchReason: "" }));
-        ucidMatches.forEach(m => matches.push({ ...m, matchReason: `Matched via UCID: ${m.ucid}` }));
-        emailMatches.forEach(m => matches.push({ ...m, matchReason: `Matched via Email: ${m.email}` }));
+        if (isDigits) {
+          // If searching digits, match UCID or ticket ID
+          matches = rosterCache.filter(att => {
+            const u = (att.ucid || "").toLowerCase();
+            const id = (att.id || "").toLowerCase();
+            return u.includes(q) || id.includes(q);
+          });
+        } else {
+          // If searching text/name, STRICTLY MATCH NAME ONLY!
+          // No email matching, no notes matching.
+          matches = rosterCache.filter(att => {
+            const n = (att.name || "").toLowerCase();
+            return n.includes(q);
+          });
+        }
       }
 
       if (matches.length > 0) {
-        renderSearchResults(matches.slice(0, 25));
+        renderSearchResults(matches.slice(0, 30));
       } else {
-        // Fallback to server search
+        // Fallback to server search with strict name/UCID filtering on results
         resultsBox.innerHTML = '<div style="color:var(--ink-soft); font-size:12px; text-align:center; padding:12px;">Searching roster on Google Sheets...</div>';
         clearTimeout(searchTimeout);
         searchTimeout = setTimeout(() => {
@@ -2293,7 +2562,28 @@
             .then(res => res.json())
             .then(d => {
               if (d && d.results && d.results.length > 0) {
-                renderSearchResults(d.results);
+                // Apply strict filtering on server results before rendering
+                // Drop any loose matches (e.g. John Smith showing up for "Goryu")
+                let filtered = [];
+                if (isDigits) {
+                  filtered = d.results.filter(att => {
+                    const u = (att.ucid || "").toLowerCase();
+                    const id = (att.id || "").toLowerCase();
+                    return u.includes(q) || id.includes(q);
+                  });
+                } else {
+                  filtered = d.results.filter(att => {
+                    const n = (att.name || "").toLowerCase();
+                    return n.includes(q);
+                  });
+                }
+
+                if (filtered.length > 0) {
+                  mergeIntoRosterCache(filtered);
+                  renderSearchResults(filtered.slice(0, 30));
+                } else {
+                  resultsBox.innerHTML = `<div style="color:var(--ink-soft); font-size:12px; text-align:center; padding:14px; font-style:italic;">No records matching "${q}" found.</div>`;
+                }
               } else {
                 resultsBox.innerHTML = `<div style="color:var(--ink-soft); font-size:12px; text-align:center; padding:14px; font-style:italic;">No records matching "${q}" found.</div>`;
               }
@@ -2311,25 +2601,37 @@
       results.forEach(att => {
         const card = document.createElement("div");
         card.className = "search-result-card";
-        const reasonHtml = att.matchReason ? `<div style="font-size:10px; color:var(--gold-deep); font-weight:600; margin-top:1px;">🔎 ${att.matchReason}</div>` : "";
+
+        let idTag = "";
+        if (att.ucid && att.ucid !== "N/A") {
+          idTag += `UCID: ${att.ucid}`;
+        }
+        if (att.id && att.id !== att.ucid && !att.id.startsWith("TEMP_")) {
+          idTag += (idTag ? " • " : "") + att.id;
+        }
+        if (!idTag) idTag = "Attendee";
+
+        const isPaid = !!att.paid;
+        const isCheckedIn = !!att.checkedIn;
+
         card.innerHTML = `
-          <div>
-            <div style="font-weight:700; font-size:14px; color:var(--ink);">${att.name}</div>
-            <div style="font-size:12px; color:var(--ink-soft); font-style:italic;">${att.id || "Ticket"} • UCID: ${att.ucid || "N/A"}</div>
-            ${reasonHtml}
-            <div style="font-size:11px; margin-top:2px;">
-              ${att.paid ? '<span style="color:var(--primary); font-weight:700;">● Paid</span>' : `<span style="color:var(--error); font-weight:700;">⚠️ Unpaid ($${MEMBERSHIP_PRICE})</span>`}
-              ${att.checkedIn ? '<span style="color:var(--ink-soft); margin-left:6px;">(Admitted ' + att.time + ')</span>' : ''}
+          <div style="min-width: 0; flex: 1;">
+            <div style="font-weight: 700; font-size: 15px; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${att.name || "Attendee"}</div>
+            <div style="font-size: 12px; color: var(--ink-soft); font-family: 'Silkscreen', monospace; margin-top: 1px;">${idTag}</div>
+            <div style="font-size: 11px; margin-top: 3px;">
+              ${isPaid 
+                ? '<span style="color: var(--primary); font-weight: 700;">● Paid</span>' 
+                : `<span style="color: var(--error); font-weight: 700;">⚠️ Unpaid ($${MEMBERSHIP_PRICE})</span>`}
             </div>
           </div>
-          <div>
-            ${att.checkedIn 
-              ? '<button class="btn-action-sm done" disabled>Admitted</button>'
-              : (att.paid 
-                  ? `<button class="btn-action-sm admit" onclick="manualCheckInAttendee('${att.id}', this)">Admit</button>`
-                  : `<div style="display:flex; flex-direction:column; gap:4px; align-items:flex-end;">
-                       <button class="btn-action-sm" style="background:var(--primary); padding:6px 10px;" onclick="collectDoorPayment('${att.id}', 'Cash', this)">💵 Cash ($${MEMBERSHIP_PRICE})</button>
-                       <button class="btn-action-sm" style="background:var(--pending); padding:6px 10px;" onclick="collectDoorPayment('${att.id}', 'E-Transfer', this)">📱 E-Transfer</button>
+          <div style="flex-shrink: 0; display: flex; flex-direction: column; gap: 4px; align-items: flex-end;">
+            ${isCheckedIn 
+              ? '<button class="btn-action-sm done" disabled style="min-width: 80px;">Admitted</button>'
+              : (isPaid 
+                  ? `<button class="btn-action-sm admit" style="min-width: 80px;" onclick="manualCheckInAttendee('${att.id || att.ucid}', this)">Admit</button>`
+                  : `<div style="display: flex; gap: 4px;">
+                       <button class="btn-action-sm" style="background: var(--primary); padding: 6px 9px;" onclick="collectDoorPayment('${att.id || att.ucid}', 'Cash', this)">💵 Cash ($${MEMBERSHIP_PRICE})</button>
+                       <button class="btn-action-sm" style="background: var(--pending); padding: 6px 9px;" onclick="collectDoorPayment('${att.id || att.ucid}', 'E-Transfer', this)">📱 E-Transfer</button>
                      </div>`
                 )
             }

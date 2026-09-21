@@ -1115,10 +1115,9 @@
       </div>
       <div class="form-group">
         <label class="form-label" id="newmember-pay-label">Payment Option</label>
-        <div class="pay-grid" style="grid-template-columns: repeat(3, 1fr); gap: 6px;">
+        <div class="pay-grid" style="grid-template-columns: 1fr 1fr; gap: 8px;">
           <div class="pay-pill selected" id="mem-pay-cash" onclick="selectMemberPay(this, 'Cash')">💵 Cash ($5)</div>
           <div class="pay-pill" id="mem-pay-etransfer" onclick="selectMemberPay(this, 'E-Transfer')">📱 E-Transfer ($5)</div>
-          <div class="pay-pill" id="mem-pay-during" onclick="selectMemberPay(this, 'Pay with Me During Event')">⏳ Pay at Event</div>
         </div>
         <div id="newmember-operator-note" style="font-size:11px; color:var(--ink-soft); font-style:italic; margin-top:4px;">
           Payment will be marked as collected by <strong id="newmember-staff-label" style="color:var(--ink);">Door Staff</strong>
@@ -1504,7 +1503,7 @@
       if (mTitle) mTitle.innerHTML = `<span>💳</span> Register Member ($${MEMBERSHIP_PRICE}.00)`;
 
       const mBtn = document.getElementById("btn-submit-newmember");
-      if (mBtn && selectedMemberPayment !== "Pay with Me During Event") {
+      if (mBtn) {
         mBtn.innerText = `Collect $${MEMBERSHIP_PRICE} & Issue Pass`;
       }
 
@@ -1588,7 +1587,7 @@
 
       if (breakdownEl) {
         const staffNames = Object.keys(staffMap);
-        if (staffNames.length === 0 && cashCount === 0) {
+        if (staffNames.length === 0 && cashCount === 0 && etransCount === 0) {
           breakdownEl.innerHTML = '<div>No door cash logged yet tonight.</div>';
         } else {
           let html = '<div style="font-weight:700; color:var(--ink); margin-bottom:2px;">Staff Cash Envelope Breakdown:</div>';
@@ -1596,6 +1595,10 @@
             const amt = staffMap[staff] || 0;
             html += `<div style="display:flex; justify-content:space-between;"><span>👤 ${staff}:</span><strong style="color:var(--primary);">$${Number(amt).toFixed(2)}</strong></div>`;
           });
+          if (staffNames.length === 0 && cashTotal > 0) {
+            const currentStaff = getScannerName() || "Door Staff";
+            html += `<div style="display:flex; justify-content:space-between;"><span>👤 ${currentStaff} (Event Sheet):</span><strong style="color:var(--primary);">$${Number(cashTotal).toFixed(2)}</strong></div>`;
+          }
           breakdownEl.innerHTML = html;
         }
       }
@@ -1604,7 +1607,11 @@
         try {
           const txs = JSON.parse(localStorage.getItem("CSS_TILL_TX_LOG") || "[]");
           if (txs.length === 0) {
-            txsEl.innerHTML = '<div style="font-style:italic; padding:2px 0;">No door transactions recorded yet.</div>';
+            if (cashCount > 0 || etransCount > 0) {
+              txsEl.innerHTML = `<div style="font-style:italic; padding:2px 0;">${cashCount + etransCount} door payments verified on active Event Log (${localTill.activeEvent || "Event"}).</div>`;
+            } else {
+              txsEl.innerHTML = '<div style="font-style:italic; padding:2px 0;">No door transactions recorded yet.</div>';
+            }
           } else {
             let html = '<div style="font-weight:700; color:var(--ink); margin-bottom:3px;">Recent Door Receipts:</div>';
             txs.slice(0, 6).forEach(tx => {
@@ -1635,6 +1642,42 @@
       const staffMap = serverTill.byStaffCash || serverTill.byStaff || {};
       for (let s in staffMap) {
         localTill.byStaff[s] = Math.max(localTill.byStaff[s] || 0, staffMap[s] || 0);
+      }
+
+      localStorage.setItem("CSS_LOCAL_TILL", JSON.stringify(localTill));
+      renderTillUI(localTill);
+    }
+
+    // Reconcile till with authoritative Google Sheet door entries (walk-ins + members)
+    function reconcileSheetTill(sheetDoorCount, sheetDoorTotal, activeEvent) {
+      if (activeEvent && localTill.activeEvent && localTill.activeEvent !== activeEvent) {
+        localTill = {
+          activeEvent: activeEvent,
+          cashTotal: 0,
+          cashCount: 0,
+          etransferTotal: 0,
+          etransferCount: 0,
+          byStaff: {}
+        };
+      }
+      if (activeEvent) localTill.activeEvent = activeEvent;
+
+      const knownEtransCount = Number(localTill.etransferCount) || 0;
+      const knownEtransTotal = Number(localTill.etransferTotal) || 0;
+
+      if (sheetDoorCount > 0) {
+        const remainingCashCount = Math.max(0, sheetDoorCount - knownEtransCount);
+        const remainingCashTotal = Math.max(0, sheetDoorTotal - knownEtransTotal);
+
+        localTill.cashCount = Math.max(Number(localTill.cashCount) || 0, remainingCashCount);
+        localTill.cashTotal = Math.max(Number(localTill.cashTotal) || 0, remainingCashTotal);
+
+        if (!localTill.byStaff) localTill.byStaff = {};
+        const staffNames = Object.keys(localTill.byStaff);
+        if (staffNames.length === 0 && localTill.cashTotal > 0) {
+          const currentStaff = getScannerName() || "Door Staff";
+          localTill.byStaff[currentStaff] = localTill.cashTotal;
+        }
       }
 
       localStorage.setItem("CSS_LOCAL_TILL", JSON.stringify(localTill));
@@ -2189,10 +2232,7 @@
       const note = document.getElementById("newmember-operator-note");
       const staffName = getScannerName();
 
-      if (method === "Pay with Me During Event") {
-        if (btn) btn.innerText = "Register & Defer Payment (Pay at Event)";
-        if (note) note.innerHTML = `Attendee will pay during event with <strong style="color:var(--ink);">${staffName}</strong>`;
-      } else if (method === "Cash") {
+      if (method === "Cash") {
         if (btn) btn.innerText = `Collect $${MEMBERSHIP_PRICE}.00 Cash & Issue Pass`;
         if (note) note.innerHTML = `Cash ($${MEMBERSHIP_PRICE}.00) collected by <strong style="color:var(--ink);">${staffName}</strong>`;
       } else {
@@ -2225,16 +2265,11 @@
           if (d.success) {
             closeAllModals();
             playSuccessSound();
-            const isUnpaid = d.status === "REGISTERED_UNPAID";
-            if (!isUnpaid) {
-              recordLocalTill(pay, MEMBERSHIP_PRICE, staffName, name, `New Member (${ucid})`);
-            }
-            const stampText = isUnpaid ? "[ MEMBER SAVED (UNPAID) ]" : "[ NEW MEMBER ISSUED ]";
-            const detailsText = isUnpaid ? `UCID: ${ucid} • Payment Pending (${pay})` : `UCID: ${ucid} • Paid $${MEMBERSHIP_PRICE}.00 (${pay})`;
-            showBanner(isUnpaid ? "stamp-unpaid" : "stamp-admitted", stampText, name, detailsText);
+            recordLocalTill(pay, MEMBERSHIP_PRICE, staffName, name, `New Member (${ucid})`);
+            showBanner("stamp-admitted", "[ NEW MEMBER ISSUED ]", name, `UCID: ${ucid} • Paid $${MEMBERSHIP_PRICE}.00 (${pay})`);
             if (d.totalCheckedIn !== undefined) updateCount(d.totalCheckedIn);
             const timeStr = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-            addHistoryRecord(name, `UCID: ${ucid} • ${d.id}`, isUnpaid ? `Pending (${pay})` : `New Member (${pay})`, isUnpaid ? "orange" : "green", timeStr);
+            addHistoryRecord(name, `UCID: ${ucid} • ${d.id}`, `New Member (${pay})`, "green", timeStr);
             nameInput.value = "";
             ucidInput.value = "";
             emailInput.value = "";
@@ -2351,11 +2386,18 @@
               updateEventUI(activeName, d.entryActive);
             }
 
-            // Use server till if returned; otherwise use real-time localTill
+            // SYNC TILL / CASH BOX WITH ACTIVE EVENT SHEET ACROSS ALL DEVICES:
             if (d.till) {
               mergeServerTill(d.till);
             } else {
-              renderTillUI(localTill);
+              const wCount = Number(d.walkins) || 0;
+              const mCount = Number(d.members) || 0;
+              const sheetDoorCount = wCount + mCount;
+              const wPrice = Number(WALKIN_PRICE) || 5;
+              const mPrice = Number(MEMBERSHIP_PRICE) || 5;
+              const sheetDoorTotal = (wCount * wPrice) + (mCount * mPrice);
+
+              reconcileSheetTill(sheetDoorCount, sheetDoorTotal, d.activeEvent);
             }
           }
         })

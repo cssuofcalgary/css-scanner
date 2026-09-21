@@ -144,28 +144,52 @@
       cursor: pointer;
       transition: all 0.15s ease;
     }
+    .btn-icon-bar {
+      background: rgba(42, 37, 32, 0.4);
+      border: 1px dashed var(--forest-border);
+      color: var(--paper);
+      width: 36px;
+      height: 36px;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      flex-shrink: 0;
+    }
     .btn-icon-bar:active { transform: scale(0.94); }
     .btn-icon-bar svg { width: 17px; height: 17px; stroke: var(--paper); }
 
-    /* Vault Unlock Button (Opens Desk Station) */
-    .btn-vault {
-      background: var(--paper);
-      color: var(--ink);
+    /* Top Staff Operator Badge */
+    .btn-top-staff {
+      background: var(--paper-deep);
       border: 1px dashed var(--gold);
-      padding: 7px 11px;
+      color: var(--ink);
+      padding: 5px 8px;
       border-radius: 4px;
-      font-family: 'Silkscreen', monospace;
+      font-family: 'Source Serif 4', Georgia, serif;
       font-size: 11px;
       font-weight: 700;
-      letter-spacing: 0.5px;
       cursor: pointer;
       display: flex;
       align-items: center;
-      gap: 5px;
+      gap: 3px;
       transition: all 0.15s ease;
       white-space: nowrap;
+      max-width: 100px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      flex-shrink: 1;
     }
-    .btn-vault:active { transform: scale(0.96); }
+    .btn-top-staff:active { transform: scale(0.95); background: var(--paper); }
+
+    /* Settings Gear Button */
+    .btn-settings {
+      border-color: var(--gold);
+      background: rgba(168, 130, 46, 0.15);
+    }
+    .btn-settings svg { stroke: var(--gold); }
 
     /* --- CAMERA SCANNER VIEWPORT --- */
     #scanner-container {
@@ -830,13 +854,18 @@
           <img src="https://lh3.googleusercontent.com/d/1pO45bVgBe2SdMzZrEsYJ9vCoo-U3nXt5" class="panda-icon" alt="Panda">
           CSS SCANNER
         </div>
-        <div class="event-badge" onclick="openHub()" title="Open Desk Station">
+        <div class="event-badge" onclick="openHub()" title="Open Settings & Station">
           <span class="dot" id="event-dot"></span>
           <span id="header-event-name">September Event</span>
         </div>
       </div>
 
       <div class="top-actions">
+        <!-- Staff Operator Name (Tap to change) -->
+        <button class="btn-top-staff" onclick="changeScannerName()" title="Change Operator Name">
+          👤 <span id="top-scanner-name">Door Staff</span> ✎
+        </button>
+
         <!-- Live Count Stamp Badge -->
         <div class="stat-badge" onclick="openRecentDrawer()" title="View Admission Log">
           <span id="count-display">0</span>
@@ -856,9 +885,12 @@
           </svg>
         </button>
 
-        <!-- Desk Station / Executive Vault Button -->
-        <button class="btn-vault" onclick="openHub()" title="Desk Station & Settings">
-          🛡️ Desk Station
+        <!-- Settings Icon Button (Replaces "Desk Station" text) -->
+        <button class="btn-icon-bar btn-settings" onclick="openHub()" title="Settings & Tools">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="3"></circle>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+          </svg>
         </button>
       </div>
     </header>
@@ -1023,18 +1055,18 @@
     </div>
   </div>
 
-  <!-- DRAWER 4: DESK STATION & EXECUTIVE HUB -->
+  <!-- DRAWER 4: STATION SETTINGS & EXECUTIVE HUB -->
   <div class="drawer" id="hub-drawer">
     <div class="drawer-handle" onclick="closeAllModals()"></div>
     <div class="drawer-header">
-      <div class="drawer-title">🏛️ Desk Station & Configuration</div>
+      <div class="drawer-title">⚙️ Station Settings & Tools</div>
       <button class="btn-close-drawer" onclick="closeAllModals()">✕</button>
     </div>
     <div class="drawer-body">
 
       <!-- Desk Station Action Center (3 Large Action Buttons) -->
       <div class="hub-box">
-        <div class="hub-box-title">Desk Station Actions</div>
+        <div class="hub-box-title">Executive Desk Actions</div>
         <div class="desk-actions-3grid">
           <div class="desk-action-btn search" onclick="openSearchDrawer()">
             <span style="font-size: 18px;">🔍</span>
@@ -1055,7 +1087,7 @@
       <div class="hub-box">
         <div class="hub-box-title">
           <span>💰 Cashbox Till Reconciler</span>
-          <span style="cursor:pointer; text-decoration:underline; font-size:10px;" onclick="fetchStats()">Refresh Till</span>
+          <button id="btn-refresh-till" class="btn-action-sm" style="font-size:9px; padding:4px 8px;" onclick="fetchStats(true)">↻ Refresh Till</button>
         </div>
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6px;">
           <div class="stat-cell" style="background: rgba(76, 107, 71, 0.12); border-color: var(--primary);">
@@ -1069,6 +1101,9 @@
         </div>
         <div id="till-staff-breakdown" style="font-size: 11px; color: var(--ink-soft); border-top: 1px dashed var(--gold); padding-top: 6px; display: flex; flex-direction: column; gap: 3px;">
           <div>No door cash logged yet tonight.</div>
+        </div>
+        <!-- Recent door payment transactions -->
+        <div id="till-recent-transactions" style="font-size: 10px; color: var(--ink-soft); border-top: 1px dotted rgba(168, 130, 46, 0.3); padding-top: 5px; max-height: 120px; overflow-y: auto;">
         </div>
       </div>
 
@@ -1116,13 +1151,59 @@
         <button class="btn-action-sm" onclick="savePricing()" style="padding: 10px;">Save Pricing</button>
       </div>
 
-      <!-- Linked Roster Information -->
+      <!-- Connected Google Sheets & Backend Setup -->
       <div class="hub-box">
         <div class="hub-box-title">Connected Google Sheets</div>
-        <div style="font-size: 13px; color: var(--ink-soft);">
-          <div>Event Log: <strong id="connected-sheet-name" style="color: var(--ink);">Checking...</strong></div>
-          <div>Membership Roster: <strong id="connected-member-sheet-name" style="color: var(--ink);">Checking...</strong></div>
-          <div>Ticket Roster: <strong id="connected-ticket-sheet-name" style="color: var(--ink);">Checking...</strong></div>
+        <div style="font-size: 12px; color: var(--ink-soft); display: flex; flex-direction: column; gap: 10px;">
+          
+          <!-- Event Sheet Log -->
+          <div>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 2px;">
+              <span>Event Sheet Log:</span>
+              <strong id="connected-sheet-name" style="color: var(--ink);">Checking...</strong>
+            </div>
+            <div style="display: flex; gap: 6px;">
+              <input class="input-parchment" id="sheet-url-input" placeholder="Paste Event Google Sheet link / ID..." style="font-size: 11px; padding: 7px 9px; flex: 1;">
+              <button class="btn-action-sm" onclick="connectGoogleSheetFromInput()" style="padding: 7px 10px; font-size: 10px;">Connect</button>
+            </div>
+          </div>
+
+          <!-- Membership Roster -->
+          <div>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 2px;">
+              <span>CSS Membership Roster:</span>
+              <strong id="connected-member-sheet-name" style="color: var(--ink);">Checking...</strong>
+            </div>
+            <div style="display: flex; gap: 6px;">
+              <input class="input-parchment" id="member-url-input" placeholder="Paste Membership Sheet link / ID..." style="font-size: 11px; padding: 7px 9px; flex: 1;">
+              <button class="btn-action-sm" onclick="connectMembershipSheetFromInput()" style="padding: 7px 10px; font-size: 10px;">Link</button>
+            </div>
+          </div>
+
+          <!-- RSVP Tickets Roster -->
+          <div>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 2px;">
+              <span>Event RSVP Tickets Roster:</span>
+              <strong id="connected-ticket-sheet-name" style="color: var(--ink);">Checking...</strong>
+            </div>
+            <div style="display: flex; gap: 6px;">
+              <input class="input-parchment" id="ticket-url-input" placeholder="Paste RSVP Tickets link / ID..." style="font-size: 11px; padding: 7px 9px; flex: 1;">
+              <button class="btn-action-sm" onclick="connectTicketSheetFromInput()" style="padding: 7px 10px; font-size: 10px;">Link</button>
+            </div>
+          </div>
+
+          <!-- Backend Web App API URL -->
+          <div style="padding-top: 8px; border-top: 1px dashed var(--gold);">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 2px;">
+              <span>Backend Web App API URL:</span>
+              <span style="font-size: 10px; text-decoration: underline; cursor: pointer; color: var(--gold);" onclick="resetApiToDefault()">Reset Default</span>
+            </div>
+            <div style="display: flex; gap: 6px;">
+              <input class="input-parchment" id="api-url-input" placeholder="https://script.google.com/macros/s/.../exec" style="font-size: 11px; padding: 7px 9px; flex: 1;">
+              <button class="btn-action-sm" onclick="saveCustomApiUrl()" style="padding: 7px 10px; font-size: 10px;">Save API</button>
+            </div>
+          </div>
+
         </div>
       </div>
 
@@ -1335,10 +1416,11 @@
     }
 
     // --- Till Reconciler Accounting ---
-    function recordLocalTill(method, amount, staff) {
+    function recordLocalTill(method, amount, staff, personName, details) {
       const amt = Number(amount) || 5;
       const s = staff || getScannerName();
-      if (/cash/i.test(method)) {
+      const isCash = /cash/i.test(method);
+      if (isCash) {
         localTill.cashTotal = (localTill.cashTotal || 0) + amt;
         localTill.cashCount = (localTill.cashCount || 0) + 1;
         if (!localTill.byStaff) localTill.byStaff = {};
@@ -1348,6 +1430,23 @@
         localTill.etransferCount = (localTill.etransferCount || 0) + 1;
       }
       localStorage.setItem("CSS_LOCAL_TILL", JSON.stringify(localTill));
+
+      // Record transaction log entry
+      try {
+        let txs = JSON.parse(localStorage.getItem("CSS_TILL_TX_LOG") || "[]");
+        const timeStr = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+        txs.unshift({
+          time: timeStr,
+          name: personName || "Attendee",
+          details: details || "",
+          method: isCash ? "Cash" : "E-Transfer",
+          amount: amt,
+          staff: s
+        });
+        if (txs.length > 50) txs = txs.slice(0, 50);
+        localStorage.setItem("CSS_TILL_TX_LOG", JSON.stringify(txs));
+      } catch (e) {}
+
       renderTillUI(localTill);
     }
 
@@ -1357,6 +1456,7 @@
       const etransEl = document.getElementById("till-etransfer-total");
       const etransCnt = document.getElementById("till-etransfer-count");
       const breakdownEl = document.getElementById("till-staff-breakdown");
+      const txsEl = document.getElementById("till-recent-transactions");
 
       const cashTotal = tillData.cashTotal || 0;
       const cashCount = tillData.cashCount || 0;
@@ -1382,42 +1482,132 @@
           breakdownEl.innerHTML = html;
         }
       }
+
+      if (txsEl) {
+        try {
+          const txs = JSON.parse(localStorage.getItem("CSS_TILL_TX_LOG") || "[]");
+          if (txs.length === 0) {
+            txsEl.innerHTML = '<div style="font-style:italic; padding:2px 0;">No door transactions recorded yet.</div>';
+          } else {
+            let html = '<div style="font-weight:700; color:var(--ink); margin-bottom:3px;">Recent Door Receipts:</div>';
+            txs.slice(0, 6).forEach(tx => {
+              html += `<div style="display:flex; justify-content:space-between; margin-bottom:2px;"><span>${tx.time} • ${tx.name}</span><span style="color:var(--primary); font-weight:700;">$${Number(tx.amount).toFixed(2)} (${tx.method} • ${tx.staff})</span></div>`;
+            });
+            txsEl.innerHTML = html;
+          }
+        } catch (e) {}
+      }
     }
 
-    // --- System Initialization & Live Sync ---
+    function mergeServerTill(serverTill) {
+      if (!serverTill) return;
+      if (serverTill.cashTotal !== undefined) {
+        localTill.cashTotal = Math.max(localTill.cashTotal || 0, serverTill.cashTotal || 0);
+      }
+      if (serverTill.cashCount !== undefined) {
+        localTill.cashCount = Math.max(localTill.cashCount || 0, serverTill.cashCount || 0);
+      }
+      if (serverTill.etransferTotal !== undefined) {
+        localTill.etransferTotal = Math.max(localTill.etransferTotal || 0, serverTill.etransferTotal || 0);
+      }
+      if (serverTill.etransferCount !== undefined) {
+        localTill.etransferCount = Math.max(localTill.etransferCount || 0, serverTill.etransferCount || 0);
+      }
+
+      if (!localTill.byStaff) localTill.byStaff = {};
+      const staffMap = serverTill.byStaffCash || serverTill.byStaff || {};
+      for (let s in staffMap) {
+        localTill.byStaff[s] = Math.max(localTill.byStaff[s] || 0, staffMap[s] || 0);
+      }
+
+      localStorage.setItem("CSS_LOCAL_TILL", JSON.stringify(localTill));
+      renderTillUI(localTill);
+    }
+
+    // --- Fast Optimistic System Initialization ---
     function initSystem() {
       API_URL = getApiUrl();
+      const input = document.getElementById("api-url-input");
+      if (input) input.value = API_URL;
       updateScannerNameUI();
       updatePricingUI();
       updateSoundUI();
       renderTillUI(localTill);
-      preloadRoster();
 
+      // Instant Optimistic UI Restore from localStorage (0ms loading!)
+      const cachedEvent = localStorage.getItem("CSS_CACHED_EVENT_NAME");
+      if (cachedEvent) updateEventUI(cachedEvent, true);
+      const cachedCount = localStorage.getItem("CSS_CACHED_COUNT");
+      if (cachedCount) updateCount(cachedCount);
+      const cachedSheet = localStorage.getItem("CSS_CACHED_EVENT_SHEET");
+      if (cachedSheet) {
+        const el = document.getElementById("connected-sheet-name");
+        if (el) el.innerText = cachedSheet;
+      }
+      const cachedMemberSheet = localStorage.getItem("CSS_CACHED_MEMBER_SHEET");
+      if (cachedMemberSheet) {
+        const el = document.getElementById("connected-member-sheet-name");
+        if (el) el.innerText = cachedMemberSheet;
+      }
+      const cachedTicketSheet = localStorage.getItem("CSS_CACHED_TICKET_SHEET");
+      if (cachedTicketSheet) {
+        const el = document.getElementById("connected-ticket-sheet-name");
+        if (el) el.innerText = cachedTicketSheet;
+      }
+
+      // Query connected sheets asynchronously in background without blocking
+      setTimeout(fetchRosters, 60);
+
+      // Query counts and till stats asynchronously
+      setTimeout(() => fetchStats(false), 120);
+
+      // Preload roster in background after 1.5s delay so camera has total priority
+      setTimeout(preloadRoster, 1500);
+    }
+
+    function fetchRosters() {
       fetch(API_URL + "?action=getRosters")
         .then(res => res.json())
         .then(d => {
           if (d.success) {
-            if (d.sheetName) document.getElementById("connected-sheet-name").innerText = d.sheetName;
-            if (d.memberSheetName) document.getElementById("connected-member-sheet-name").innerText = d.memberSheetName;
-            if (d.ticketSheetName) document.getElementById("connected-ticket-sheet-name").innerText = d.ticketSheetName;
-            if (d.walkinPrice) { WALKIN_PRICE = d.walkinPrice; localStorage.setItem("CSS_WALKIN_PRICE", d.walkinPrice); }
-            if (d.membershipPrice) { MEMBERSHIP_PRICE = d.membershipPrice; localStorage.setItem("CSS_MEMBERSHIP_PRICE", d.membershipPrice); }
+            if (d.sheetName) {
+              const el = document.getElementById("connected-sheet-name");
+              if (el) el.innerText = d.sheetName;
+              localStorage.setItem("CSS_CACHED_EVENT_SHEET", d.sheetName);
+            }
+            if (d.memberSheetName) {
+              const el = document.getElementById("connected-member-sheet-name");
+              if (el) el.innerText = d.memberSheetName;
+              localStorage.setItem("CSS_CACHED_MEMBER_SHEET", d.memberSheetName);
+            } else {
+              const el = document.getElementById("connected-member-sheet-name");
+              if (el) el.innerText = "(Not Linked)";
+            }
+            if (d.ticketSheetName) {
+              const el = document.getElementById("connected-ticket-sheet-name");
+              if (el) el.innerText = d.ticketSheetName;
+              localStorage.setItem("CSS_CACHED_TICKET_SHEET", d.ticketSheetName);
+            } else {
+              const el = document.getElementById("connected-ticket-sheet-name");
+              if (el) el.innerText = "(Not Linked)";
+            }
+            if (d.walkinPrice) {
+              WALKIN_PRICE = d.walkinPrice;
+              localStorage.setItem("CSS_WALKIN_PRICE", d.walkinPrice);
+            }
+            if (d.membershipPrice) {
+              MEMBERSHIP_PRICE = d.membershipPrice;
+              localStorage.setItem("CSS_MEMBERSHIP_PRICE", d.membershipPrice);
+            }
             updatePricingUI();
             if (d.events) populateEventSelect(d.events, d.activeEvent);
-            updateEventUI(d.activeEvent, true);
+            if (d.activeEvent) {
+              updateEventUI(d.activeEvent, true);
+              localStorage.setItem("CSS_CACHED_EVENT_NAME", d.activeEvent);
+            }
           }
         })
         .catch(e => console.warn("Rosters sync:", e));
-
-      fetch(API_URL + "?action=count")
-        .then(res => res.json())
-        .then(d => {
-          if (d && d.totalCheckedIn !== undefined) {
-            updateCount(d.totalCheckedIn);
-            if (d.activeEvent) updateEventUI(d.activeEvent, d.entryActive);
-          }
-        })
-        .catch(e => console.warn("Initial count fetch:", e));
     }
 
     function updateCount(num) {
@@ -1761,7 +1951,7 @@
           if (d.success) {
             closeAllModals();
             playSuccessSound();
-            recordLocalTill(selectedPayment, WALKIN_PRICE, staffName);
+            recordLocalTill(selectedPayment, WALKIN_PRICE, staffName, name, `Walk-In (${ucid})`);
             showBanner("stamp-admitted", "[ WALK-IN ADMITTED ]", name, `UCID: ${ucid} • ${d.payment || pay}`);
             if (d.totalCheckedIn !== undefined) updateCount(d.totalCheckedIn);
             const timeStr = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
@@ -1828,7 +2018,7 @@
             playSuccessSound();
             const isUnpaid = d.status === "REGISTERED_UNPAID";
             if (!isUnpaid) {
-              recordLocalTill(pay, MEMBERSHIP_PRICE, staffName);
+              recordLocalTill(pay, MEMBERSHIP_PRICE, staffName, name, `New Member (${ucid})`);
             }
             const stampText = isUnpaid ? "[ MEMBER SAVED (UNPAID) ]" : "[ NEW MEMBER ISSUED ]";
             const detailsText = isUnpaid ? `UCID: ${ucid} • Payment Pending (${pay})` : `UCID: ${ucid} • Paid $${MEMBERSHIP_PRICE}.00 (${pay})`;
@@ -1898,29 +2088,173 @@
         });
     }
 
-    function fetchStats() {
+    function fetchStats(isUserRefresh = false) {
+      const refreshBtn = document.getElementById("btn-refresh-till");
+      if (isUserRefresh && refreshBtn) {
+        refreshBtn.innerText = "⏳ Syncing...";
+        refreshBtn.disabled = true;
+      }
+
       fetch(API_URL + "?action=stats")
         .then(res => res.json())
         .then(d => {
+          if (refreshBtn) {
+            refreshBtn.innerText = "↻ Refresh Till";
+            refreshBtn.disabled = false;
+          }
           if (d.success) {
             document.getElementById("stat-total").innerText = d.total || 0;
             document.getElementById("stat-tickets").innerText = d.tickets || 0;
             document.getElementById("stat-members").innerText = d.members || 0;
             document.getElementById("stat-walkins").innerText = d.walkins || 0;
             updateCount(d.total || 0);
+            localStorage.setItem("CSS_CACHED_COUNT", d.total || 0);
 
             // Use server till if returned; otherwise use real-time localTill
             if (d.till) {
-              renderTillUI(d.till);
+              mergeServerTill(d.till);
             } else {
               renderTillUI(localTill);
             }
           }
         })
         .catch(e => {
+          if (refreshBtn) {
+            refreshBtn.innerText = "↻ Refresh Till";
+            refreshBtn.disabled = false;
+          }
           console.warn("Stats fetch:", e);
           renderTillUI(localTill);
         });
+    }
+
+    // --- Google Sheet & Roster Connections ---
+    function cleanSheetId(input) {
+      let s = (input || "").trim();
+      if (s.includes("/d/")) {
+        s = s.split("/d/")[1].split("/")[0];
+      }
+      return s;
+    }
+
+    function connectGoogleSheetFromInput() {
+      const input = document.getElementById("sheet-url-input").value.trim();
+      if (!input) {
+        alert("Please paste your Google Sheet URL or ID (e.g. https://docs.google.com/spreadsheets/d/.../edit)");
+        return;
+      }
+      const sheetId = cleanSheetId(input);
+      const nameEl = document.getElementById("connected-sheet-name");
+      if (nameEl) nameEl.innerText = "Connecting...";
+
+      fetch(API_URL + "?action=setSheet&sheetId=" + encodeURIComponent(sheetId) + "&pin=" + encodeURIComponent(currentExecPin))
+        .then(res => res.json())
+        .then(d => {
+          if (d.success) {
+            alert("✔ Successfully connected to Event Log: " + d.sheetName);
+            if (nameEl) nameEl.innerText = d.sheetName;
+            localStorage.setItem("CSS_CACHED_EVENT_SHEET", d.sheetName);
+            if (d.events) populateEventSelect(d.events, d.activeEvent);
+            updateEventUI(d.activeEvent, true);
+            fetchStats();
+            document.getElementById("sheet-url-input").value = "";
+          } else if (d.error === "UNAUTHORIZED") {
+            lockHub();
+            alert(d.message || "Executive session expired. Please enter PIN again.");
+          } else {
+            alert("❌ Connection error: " + d.message);
+            if (nameEl) nameEl.innerText = "Error";
+          }
+        })
+        .catch(err => {
+          alert("Network error connecting to sheet: " + err.message);
+          if (nameEl) nameEl.innerText = "Network Error";
+        });
+    }
+
+    function connectMembershipSheetFromInput() {
+      const input = document.getElementById("member-url-input").value.trim();
+      if (!input) {
+        alert("Please paste your CSS Membership Google Sheet URL or ID.");
+        return;
+      }
+      const sheetId = cleanSheetId(input);
+      const nameEl = document.getElementById("connected-member-sheet-name");
+      if (nameEl) nameEl.innerText = "Linking...";
+
+      fetch(API_URL + "?action=setMembershipSheet&sheetId=" + encodeURIComponent(sheetId) + "&pin=" + encodeURIComponent(currentExecPin))
+        .then(res => res.json())
+        .then(d => {
+          if (d.success) {
+            alert("✔ " + d.message);
+            if (nameEl) nameEl.innerText = d.sheetName;
+            localStorage.setItem("CSS_CACHED_MEMBER_SHEET", d.sheetName);
+            document.getElementById("member-url-input").value = "";
+          } else if (d.error === "UNAUTHORIZED") {
+            lockHub();
+            alert(d.message || "Executive session expired. Please enter PIN again.");
+          } else {
+            alert("❌ " + d.message);
+            if (nameEl) nameEl.innerText = "Error";
+          }
+        })
+        .catch(e => {
+          alert("Network error: " + e.message);
+          if (nameEl) nameEl.innerText = "Network Error";
+        });
+    }
+
+    function connectTicketSheetFromInput() {
+      const input = document.getElementById("ticket-url-input").value.trim();
+      if (!input) {
+        alert("Please paste your Event RSVP Tickets Google Sheet URL or ID.");
+        return;
+      }
+      const sheetId = cleanSheetId(input);
+      const nameEl = document.getElementById("connected-ticket-sheet-name");
+      if (nameEl) nameEl.innerText = "Linking...";
+
+      fetch(API_URL + "?action=setTicketSheet&sheetId=" + encodeURIComponent(sheetId) + "&pin=" + encodeURIComponent(currentExecPin))
+        .then(res => res.json())
+        .then(d => {
+          if (d.success) {
+            alert("✔ " + d.message);
+            if (nameEl) nameEl.innerText = d.sheetName;
+            localStorage.setItem("CSS_CACHED_TICKET_SHEET", d.sheetName);
+            document.getElementById("ticket-url-input").value = "";
+          } else if (d.error === "UNAUTHORIZED") {
+            lockHub();
+            alert(d.message || "Executive session expired. Please enter PIN again.");
+          } else {
+            alert("❌ " + d.message);
+            if (nameEl) nameEl.innerText = "Error";
+          }
+        })
+        .catch(e => {
+          alert("Network error: " + e.message);
+          if (nameEl) nameEl.innerText = "Network Error";
+        });
+    }
+
+    function saveCustomApiUrl() {
+      const input = document.getElementById("api-url-input").value.trim();
+      if (!input || !input.startsWith("https://") || !input.includes("script.google.com")) {
+        alert("Please enter a valid HTTPS Google Apps Script URL (https://script.google.com/macros/s/.../exec).");
+        return;
+      }
+      localStorage.setItem("CSS_SCANNER_API_URL", input);
+      API_URL = input;
+      alert("API URL updated! Re-syncing with new endpoint...");
+      initSystem();
+    }
+
+    function resetApiToDefault() {
+      localStorage.removeItem("CSS_SCANNER_API_URL");
+      API_URL = DEFAULT_API_URL;
+      const input = document.getElementById("api-url-input");
+      if (input) input.value = DEFAULT_API_URL;
+      alert("Reset back to default Production API URL!");
+      initSystem();
     }
 
     // --- INSTANT IN-MEMORY SEARCH (PRIORITIZES NAME FIRST) ---
@@ -2036,7 +2370,7 @@
         .then(data => {
           if (data.success) {
             playSuccessSound();
-            recordLocalTill(method, MEMBERSHIP_PRICE, staffName);
+            recordLocalTill(method, MEMBERSHIP_PRICE, staffName, data.name || "Member", `Membership Fee (${data.ucid || id})`);
             showBanner("stamp-admitted", "[ PAID & ADMITTED ]", data.name || "Member", `UCID: ${data.ucid || "N/A"} • Paid $${MEMBERSHIP_PRICE}.00 (${method})`);
             if (data.totalCheckedIn !== undefined) updateCount(data.totalCheckedIn);
             const timeStr = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
